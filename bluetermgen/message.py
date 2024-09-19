@@ -119,9 +119,8 @@ class Message:
     def padx(self, value: tuple | int):
         if isinstance(value, int) and value >= 0:
             self.__padx = (value, value)
-        elif isinstance(value, tuple) and len(value) == 2:
-            if all(isinstance(x, int) and x >= 0 for x in value):
-                self.__padx = value
+        elif isinstance(value, tuple) and len(value) == 2 and all(isinstance(x, int) and x >= 0 for x in value):
+            self.__padx = value
         else:
             raise ValueError("""
                              The 'padx' property must be a tuple of length 2
