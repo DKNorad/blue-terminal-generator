@@ -73,7 +73,8 @@ class Message:
             self._message_text = [value]
         else:
             raise ValueError(
-                "The 'message_text' property must be a string or a list of strings.")
+                "The 'message_text' property must be a string or a list of strings."
+            )
 
     @property
     def center(self) -> bool:
@@ -96,7 +97,8 @@ class Message:
             self.__min_width = value
         else:
             raise ValueError(
-                "The 'min_width' property must be a non-negative integer.")
+                "The 'min_width' property must be a non-negative integer."
+            )
 
     @property
     def style(self) -> str:
