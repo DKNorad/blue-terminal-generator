@@ -163,31 +163,34 @@ class Message:
         )
 
     def generate_message(self) -> str:
+        # Add the top line
         item = [
             f"{self.__style['tl']}"
             f"{self.__style['h'] * (self._width)}"
             f"{self.__style['tr']}\n"]
 
+        # Add message lines
         for line in self._message_text:
             if self.__center:
-                item.append(
-                    f"{self.__style['v']}"
-                    f"{line:^{self._width}}"
-                    f"{self.__style['v']}\n"
-                )
+                # Center the line in the available width
+                formatted_line = f"{line:^{self._width}}"
             else:
-                item.append(
-                    f"{self.__style['v']}"
-                    f"{' ' * self.__padx[0]}"
-                    f"{line}"
-                    f"{' ' * (self._width - len(line) - self.__padx[0])}"
-                    f"{self.__style['v']}\n"
-                )
+                # Left align the line with padding
+                padding_left = ' ' * self.__padx[0]
+                padding_right = ' ' * \
+                    (self._width - len(line) - self.__padx[0])
+                formatted_line = f"{padding_left}{line}{padding_right}"
 
+            item.append(
+                f"{self.__style['v']}{formatted_line}{self.__style['v']}\n"
+            )
+
+        # Add the bottom line
         item.append(
             f"{self.__style['bl']}"
-            f"{self.__style['h'] * (self._width)}"
-            f"{self.__style['br']}")
+            f"{self.__style['h'] * self._width}"
+            f"{self.__style['br']}"
+        )
 
         return ''.join(item)
 
