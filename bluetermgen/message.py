@@ -30,7 +30,8 @@ class Message:
         ValueError:
             If the 'style' property is not a string.
         ValueError:
-            If the 'padx' property is not a tuple of length 2 containing integers.
+            If the 'padx' property is not a tuple of length 2
+            containing integers.
         ValueError:
             If the 'padx' property is not an integer.
         ValueError:
@@ -72,9 +73,11 @@ class Message:
         elif isinstance(value, list):
             self._message_text = [value]
         else:
-            raise ValueError(
-                "The 'message_text' property must be a string or a list of strings."
-            )
+            raise ValueError("""
+                The 'message_text' property must be a string
+                or a list of strings.
+                """
+                             )
 
     @property
     def center(self) -> bool:
