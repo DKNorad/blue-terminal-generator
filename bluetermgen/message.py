@@ -73,7 +73,7 @@ class Message:
             self._message_text = [value]
         else:
             raise ValueError(
-                "The 'message' property must be a string or a list of strings.")
+                "The 'message_text' property must be a string or a list of strings.")
 
     @property
     def center(self) -> bool:
