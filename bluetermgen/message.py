@@ -68,12 +68,9 @@ class Message:
     @message_text.setter
     def message_text(self, value: str | list):
         if isinstance(value, str):
-            if isinstance(value, str):
-                self._message_text = value.split("\n")
-            else:
-                self._message_text = [value]
+            self._message_text = value.split("\n")
         elif isinstance(value, list):
-            self._message_text = value
+            self._message_text = [value]
         else:
             raise ValueError(
                 "The 'message' property must be a string or a list of strings.")
@@ -188,9 +185,4 @@ class Message:
 
 
 if __name__ == "__main__":
-    message = Message(
-        message_text="Hello, World!",
-        center=True,
-        min_width=20
-    )
-    print(message.message)
+    pass
