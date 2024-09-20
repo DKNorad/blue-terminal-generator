@@ -1,4 +1,4 @@
-from helpers import calculate_inner_width, STYLES
+from .helpers import calculate_inner_width, STYLES
 
 
 class Menu:
@@ -10,10 +10,10 @@ class Menu:
             The menu options.
         header (str, optional):
             The menu header. Can be a string or a list of strings for
-            multiple lines. Defaults to None.
+            multiple lines. Defaults to "".
         footer (str | list, optional):
             The menu footer. Can be a string or a list of strings for
-            multiple lines. Defaults to None.
+            multiple lines. Defaults to "".
         numbering_type (str, optional):
             The type of numbering to use:
             - "None" - No numbering.
@@ -82,8 +82,8 @@ class Menu:
     def __init__(
         self,
         menu_items: list,
-        header: str | list = None,
-        footer: str | list = None,
+        header: str | list = "",
+        footer: str | list = "",
         numbering_type: str = "None",
         center: tuple = (False, False, False),
         min_width: int = 0,
@@ -309,7 +309,7 @@ class Menu:
         self._width = len(item[0].strip("\n"))
 
         # Add header lines
-        if self.__header:
+        if self.__header[0]:
             for line in self.__header:
                 item.append(format_line(
                     line, self.__center[0], self.__padx[0]
@@ -325,14 +325,14 @@ class Menu:
             if self.__numbering_type:
                 line = add_numbering(line, idx)
             item.append(format_line(line, self.__center[1], self.__padx[1]))
-        item.append(
-            f"{self.__style['ml']}"
-            f"{self.__style['h'] * self._inner_width}"
-            f"{self.__style['mr']}\n"
-        )
 
         # Add footer lines
-        if self.__footer:
+        if self.__footer[0]:
+            item.append(
+                f"{self.__style['ml']}"
+                f"{self.__style['h'] * self._inner_width}"
+                f"{self.__style['mr']}\n"
+            )
             for line in self.__footer:
                 item.append(format_line(
                     line, self.__center[2], self.__padx[2]))
