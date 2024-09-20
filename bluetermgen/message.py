@@ -1,4 +1,4 @@
-from helpers import calculate_inner_width, STYLES
+from .helpers import calculate_inner_width, STYLES
 
 
 class Message:
