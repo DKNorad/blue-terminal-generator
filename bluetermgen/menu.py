@@ -205,7 +205,9 @@ class Menu:
     @padx.setter
     def padx(self, value: tuple | int):
         def validate_padx_structure(padx_tuple):
-            """Helper function to validate that the tuple structure is correct."""
+            """
+            Helper function to validate that the tuple structure is correct.
+            """
             return all(
                 isinstance(x, tuple) and len(x) == 2 and all(n >= 0 for n in x)
                 for x in padx_tuple
@@ -230,7 +232,8 @@ class Menu:
         for idx, section in enumerate(['header', 'menu items', 'footer']):
             if self.__center[idx] and self.__padx[idx] != (0, 0):
                 raise ValueError(
-                    f"The 'padx' for the '{section}' cannot be used when 'center' is True for the same."
+                    f"""The 'padx' for the '{section}' cannot be used
+                    when 'center' is True for the same."""
                 )
 
     def get_width(self) -> int:
@@ -267,10 +270,20 @@ class Menu:
         def format_line(line: str, centered: bool, padx: tuple) -> str:
             """Helper to format a line based on center alignment."""
             if centered:
-                return f"{self.__style['v']}{line:^{self._inner_width}}{self.__style['v']}\n"
+                return (
+                    f"{self.__style['v']}"
+                    f"{line:^{self._inner_width}}"
+                    f"{self.__style['v']}\n"
+                )
             else:
                 lpadx, _ = padx
-                return f"{self.__style['v']}{' ' * lpadx}{line}{' ' * (self._inner_width - len(line) - lpadx)}{self.__style['v']}\n"
+                return (
+                    f"{self.__style['v']}"
+                    f"{' ' * lpadx}"
+                    f"{line}"
+                    f"{' ' * (self._inner_width - len(line) - lpadx)}"
+                    f"{self.__style['v']}\n"
+                )
 
         def add_numbering(line: str, idx: int) -> str:
             """Helper to add numbering to a line for the menu items."""
@@ -287,7 +300,9 @@ class Menu:
 
         # Start the menu with the top line
         item = [
-            f"{self.__style['tl']}{self.__style['h'] * self._inner_width}{self.__style['tr']}\n"
+            f"{self.__style['tl']}"
+            f"{self.__style['h'] * self._inner_width}"
+            f"{self.__style['tr']}\n"
         ]
 
         # Get the width of the menu
@@ -297,9 +312,12 @@ class Menu:
         if self.__header:
             for line in self.__header:
                 item.append(format_line(
-                    line, self.__center[0], self.__padx[0]))
+                    line, self.__center[0], self.__padx[0]
+                ))
             item.append(
-                f"{self.__style['ml']}{self.__style['h'] * self._inner_width}{self.__style['mr']}\n"
+                f"{self.__style['ml']}"
+                f"{self.__style['h'] * self._inner_width}"
+                f"{self.__style['mr']}\n"
             )
 
         # Add menu items with optional numbering
@@ -308,7 +326,10 @@ class Menu:
                 line = add_numbering(line, idx)
             item.append(format_line(line, self.__center[1], self.__padx[1]))
         item.append(
-            f"{self.__style['ml']}{self.__style['h'] * self._inner_width}{self.__style['mr']}\n")
+            f"{self.__style['ml']}"
+            f"{self.__style['h'] * self._inner_width}"
+            f"{self.__style['mr']}\n"
+        )
 
         # Add footer lines
         if self.__footer:
@@ -318,7 +339,10 @@ class Menu:
 
         # Add the bottom line
         item.append(
-            f"{self.__style['bl']}{self.__style['h'] * self._inner_width}{self.__style['br']}")
+            f"{self.__style['bl']}"
+            f"{self.__style['h'] * self._inner_width}"
+            f"{self.__style['br']}"
+        )
 
         # Get the height of the menu
         self._height = len(item)
