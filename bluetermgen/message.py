@@ -40,6 +40,8 @@ class Message:
     Methods:
         get_width(self):
             Get the entire width of the message including the borders.
+        get_height(self):
+            Get the entire height of the message including the borders.
 
     Example:
         >>> message = Message(["", "Hello World!", ""],
