@@ -16,7 +16,7 @@ class Message:
         style (str, optional):
             The frame style to use. Defaults to "single".
         padx (tuple | int, optional):
-            Padding to add around the text. Defaults to 0.
+            Padding to add around the text. Defaults to (0, 0).
             (1, 1) = (left, right)
             1 = (1, 1)
 
@@ -36,12 +36,6 @@ class Message:
             If the 'padx' property is not an integer.
         ValueError:
             If the 'padx' property is set while the 'center' property is True.
-
-    Methods:
-        get_width(self):
-            Get the entire width of the message including the borders.
-        get_height(self):
-            Get the entire height of the message including the borders.
 
     Example:
         >>> message = Message(["", "Hello World!", ""],
