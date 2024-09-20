@@ -1,4 +1,4 @@
-from helpers import calculate_width, STYLES
+from helpers import calculate_inner_width, STYLES
 
 
 class Message:
@@ -59,7 +59,9 @@ class Message:
         self.min_width = min_width
         self.style = style
         self.padx = padx
-        self._width = self.calculate_width()
+        self._inner_width = self.calculate_width()
+        self._width = 0
+        self._height = 0
         self._message = self.generate_message()
 
     @property
@@ -71,7 +73,7 @@ class Message:
         if isinstance(value, str):
             self._message_text = value.split("\n")
         elif isinstance(value, list):
-            self._message_text = [value]
+            self._message_text = value
         else:
             raise ValueError("""
                 The 'message_text' property must be a string
@@ -148,15 +150,24 @@ class Message:
 
     def get_width(self) -> int:
         """
-        Get the entire width of the message including the borders.
-
         Returns:
             int: The entire width of the message including the borders.
         """
         return self._width
 
+    def get_height(self) -> int:
+        """
+        Returns:
+            int: The entire height of the message including the borders.
+        """
+        return self._height
+
     def calculate_width(self) -> int:
-        return calculate_width(
+        """
+        Returns:
+            int: The width of the message excluding the borders.
+        """
+        return calculate_inner_width(
             head=self._message_text,
             minimum_width=self.__min_width,
             padx=self.__padx
@@ -166,19 +177,22 @@ class Message:
         # Add the top line
         item = [
             f"{self.__style['tl']}"
-            f"{self.__style['h'] * (self._width)}"
+            f"{self.__style['h'] * (self._inner_width)}"
             f"{self.__style['tr']}\n"]
+
+        # Get the width of the menu
+        self._width = len(item[0].strip("\n"))
 
         # Add message lines
         for line in self._message_text:
             if self.__center:
                 # Center the line in the available width
-                formatted_line = f"{line:^{self._width}}"
+                formatted_line = f"{line:^{self._inner_width}}"
             else:
                 # Left align the line with padding
                 padding_left = ' ' * self.__padx[0]
                 padding_right = ' ' * \
-                    (self._width - len(line) - self.__padx[0])
+                    (self._inner_width - len(line) - self.__padx[0])
                 formatted_line = f"{padding_left}{line}{padding_right}"
 
             item.append(
@@ -188,13 +202,16 @@ class Message:
         # Add the bottom line
         item.append(
             f"{self.__style['bl']}"
-            f"{self.__style['h'] * self._width}"
+            f"{self.__style['h'] * self._inner_width}"
             f"{self.__style['br']}"
         )
 
+        # Get the height of the menu
+        self._height = len(item)
+
         return ''.join(item)
 
-    @property
+    @ property
     def message(self) -> str:
         return self._message
 
