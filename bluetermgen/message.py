@@ -211,7 +211,7 @@ class Message:
 
         return ''.join(item)
 
-    @ property
+    @property
     def message(self) -> str:
         return self._message
 
