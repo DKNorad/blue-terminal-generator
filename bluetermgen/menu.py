@@ -88,7 +88,7 @@ class Menu:
         center: tuple = (False, False, False),
         min_width: int = 0,
         style: str = "single",
-        padx: tuple = ((0, 0), (0, 0), (0, 0))
+        padx: tuple = ((0, 0), (0, 0), (0, 0)),
     ) -> None:
         self.menu_items = menu_items
         self.header = header
@@ -124,7 +124,9 @@ class Menu:
     def header(self, value: str | list):
         if isinstance(value, str):
             self.__header = value.split("\n")
-        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
             self.__header = value
         else:
             raise ValueError(
@@ -139,7 +141,9 @@ class Menu:
     def footer(self, value: str | list):
         if isinstance(value, str):
             self.__footer = value.split("\n")
-        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
             self.__footer = value
         else:
             raise ValueError(
@@ -152,9 +156,15 @@ class Menu:
 
     @numbering_type.setter
     def numbering_type(self, value: str):
-        valid_types = ["None", "number_dot", "number_parentheses",
-                       "letter_upper_dot", "letter_upper_parentheses",
-                       "letter_lower_dot", "letter_lower_parentheses"]
+        valid_types = [
+            "None",
+            "number_dot",
+            "number_parentheses",
+            "letter_upper_dot",
+            "letter_upper_parentheses",
+            "letter_lower_dot",
+            "letter_lower_parentheses",
+        ]
         if isinstance(value, str) and value in valid_types:
             self.__numbering_type = value
         else:
@@ -168,7 +178,9 @@ class Menu:
 
     @center.setter
     def center(self, value: bool):
-        if isinstance(value, tuple) and all(isinstance(x, bool) for x in value):
+        if isinstance(value, tuple) and all(
+            isinstance(x, bool) for x in value
+        ):
             self.__center = value
         else:
             raise ValueError("The 'center' property must be a boolean.")
@@ -183,7 +195,8 @@ class Menu:
             self.__min_width = value
         else:
             raise ValueError(
-                "The 'min_width' property must be a non-negative integer.")
+                "The 'min_width' property must be a non-negative integer."
+            )
 
     @property
     def style(self) -> str:
@@ -196,7 +209,8 @@ class Menu:
             self.__style = STYLES[value]
         else:
             raise ValueError(
-                f"The 'style' property must be one of {valid_styles}.")
+                f"The 'style' property must be one of {valid_styles}."
+            )
 
     @property
     def padx(self) -> tuple:
@@ -229,7 +243,7 @@ class Menu:
             )
 
         # Validate 'center' conflict with padding
-        for idx, section in enumerate(['header', 'menu items', 'footer']):
+        for idx, section in enumerate(["header", "menu items", "footer"]):
             if self.__center[idx] and self.__padx[idx] != (0, 0):
                 raise ValueError(
                     f"""The 'padx' for the '{section}' cannot be used
@@ -260,10 +274,13 @@ class Menu:
         return calculate_inner_width(
             head=self.__header,
             foot=self.__footer,
-            opt=(self.__menu_items if self.__numbering_type ==
-                 "None" else modified_menu_items),
+            opt=(
+                self.__menu_items
+                if self.__numbering_type == "None"
+                else modified_menu_items
+            ),
             minimum_width=self.__min_width,
-            padx=self.__padx
+            padx=self.__padx,
         )
 
     def generate_menu(self) -> str:
@@ -293,7 +310,7 @@ class Menu:
                 "letter_lower_dot": f"{chr(ord('a') + idx)}. ",
                 "letter_upper_dot": f"{chr(ord('A') + idx)}. ",
                 "letter_lower_parentheses": f"{chr(ord('a') + idx)}) ",
-                "letter_upper_parentheses": f"{chr(ord('A') + idx)}) "
+                "letter_upper_parentheses": f"{chr(ord('A') + idx)}) ",
             }
             prefix = numbering_type_map.get(self.__numbering_type, "")
             return f"{prefix}{line}"
@@ -311,9 +328,9 @@ class Menu:
         # Add header lines
         if self.__header[0]:
             for line in self.__header:
-                item.append(format_line(
-                    line, self.__center[0], self.__padx[0]
-                ))
+                item.append(
+                    format_line(line, self.__center[0], self.__padx[0])
+                )
             item.append(
                 f"{self.__style['ml']}"
                 f"{self.__style['h'] * self._inner_width}"
@@ -334,8 +351,9 @@ class Menu:
                 f"{self.__style['mr']}\n"
             )
             for line in self.__footer:
-                item.append(format_line(
-                    line, self.__center[2], self.__padx[2]))
+                item.append(
+                    format_line(line, self.__center[2], self.__padx[2])
+                )
 
         # Add the bottom line
         item.append(
@@ -349,7 +367,7 @@ class Menu:
 
         return "".join(item)
 
-    @ property
+    @property
     def menu(self) -> str:
         return self._menu
 

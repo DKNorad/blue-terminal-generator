@@ -43,11 +43,12 @@ class Message:
     """
 
     def __init__(
-        self, message_text: str | list,
+        self,
+        message_text: str | list,
         center: bool = False,
         min_width: int = 0,
         style: str = "single",
-        padx: tuple | int = (0, 0)
+        padx: tuple | int = (0, 0),
     ) -> None:
 
         self.message_text = message_text
@@ -71,11 +72,12 @@ class Message:
         elif isinstance(value, list):
             self._message_text = value
         else:
-            raise ValueError("""
+            raise ValueError(
+                """
                 The 'message_text' property must be a string
                 or a list of strings.
                 """
-                             )
+            )
 
     @property
     def center(self) -> bool:
@@ -112,7 +114,8 @@ class Message:
             self.__style = STYLES[value]
         else:
             raise ValueError(
-                f"The 'style' property must be one of {valid_styles}.")
+                f"The 'style' property must be one of {valid_styles}."
+            )
 
     @property
     def padx(self) -> tuple:
@@ -125,19 +128,16 @@ class Message:
         elif (
             isinstance(value, tuple)
             and len(value) == 2
-            and all(
-                isinstance(x, int)
-                and x >= 0
-                for x in value
-            )
+            and all(isinstance(x, int) and x >= 0 for x in value)
         ):
             self.__padx = value
         else:
-            raise ValueError("""
+            raise ValueError(
+                """
                              The 'padx' property must be a tuple of length 2
                              containing positive integers.
                              """
-                             )
+            )
 
         if self.__center and self.__padx[0] > 0 and self.__padx[1] > 0:
             raise ValueError(
@@ -166,7 +166,7 @@ class Message:
         return calculate_inner_width(
             head=self._message_text,
             minimum_width=self.__min_width,
-            padx=self.__padx
+            padx=self.__padx,
         )
 
     def generate_message(self) -> str:
@@ -174,7 +174,8 @@ class Message:
         item = [
             f"{self.__style['tl']}"
             f"{self.__style['h'] * (self._inner_width)}"
-            f"{self.__style['tr']}\n"]
+            f"{self.__style['tr']}\n"
+        ]
 
         # Get the width of the menu
         self._width = len(item[0].strip("\n"))
@@ -186,9 +187,10 @@ class Message:
                 formatted_line = f"{line:^{self._inner_width}}"
             else:
                 # Left align the line with padding
-                padding_left = ' ' * self.__padx[0]
-                padding_right = ' ' * \
-                    (self._inner_width - len(line) - self.__padx[0])
+                padding_left = " " * self.__padx[0]
+                padding_right = " " * (
+                    self._inner_width - len(line) - self.__padx[0]
+                )
                 formatted_line = f"{padding_left}{line}{padding_right}"
 
             item.append(
@@ -205,7 +207,7 @@ class Message:
         # Get the height of the menu
         self._height = len(item)
 
-        return ''.join(item)
+        return "".join(item)
 
     @property
     def message(self) -> str:

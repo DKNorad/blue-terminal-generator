@@ -21,7 +21,7 @@ class TestMenu(unittest.TestCase):
         menu = Menu(
             menu_items=["Option 1", "Option 2", "Option 3"],
             header="Main Menu",
-            footer="x) Exit"
+            footer="x) Exit",
         )
         expected = (
             "┌─────────┐\n"
@@ -40,7 +40,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_upper_dot(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_upper_dot"
+            numbering_type="letter_upper_dot",
         )
         expected = (
             "┌───────────┐\n"
@@ -54,7 +54,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_lower_dot(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_lower_dot"
+            numbering_type="letter_lower_dot",
         )
         expected = (
             "┌───────────┐\n"
@@ -67,8 +67,7 @@ class TestMenu(unittest.TestCase):
     # Test menu with number-based numbering (number, dot)
     def test_menu_number_dot(self):
         menu = Menu(
-            menu_items=["Option 1", "Option 2"],
-            numbering_type="number_dot"
+            menu_items=["Option 1", "Option 2"], numbering_type="number_dot"
         )
         expected = (
             "┌───────────┐\n"
@@ -78,11 +77,11 @@ class TestMenu(unittest.TestCase):
         )
         self.assertEqual(menu.menu, expected)
 
-    # Test menu with letter-based numbering (uppercase, parantheses)
+    # Test menu with letter-based numbering (uppercase, parentheses)
     def test_menu_letter_upper_parantheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_upper_parentheses"
+            numbering_type="letter_upper_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -92,11 +91,11 @@ class TestMenu(unittest.TestCase):
         )
         self.assertEqual(menu.menu, expected)
 
-    # Test menu with letter-based numbering (lowercase, parantheses)
+    # Test menu with letter-based numbering (lowercase, parentheses)
     def test_menu_letter_lower_parantheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_lower_parentheses"
+            numbering_type="letter_lower_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -106,11 +105,11 @@ class TestMenu(unittest.TestCase):
         )
         self.assertEqual(menu.menu, expected)
 
-    # Test menu with number-based numbering (number, parantheses)
+    # Test menu with number-based numbering (number, parentheses)
     def test_menu_number_parentheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="number_parentheses"
+            numbering_type="number_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -127,7 +126,7 @@ class TestMenu(unittest.TestCase):
             header="Centered Header",
             footer="Centered Footer",
             center=(True, False, True),
-            min_width=21
+            min_width=21,
         )
         expected = (
             "┌───────────────────┐\n"
@@ -145,7 +144,7 @@ class TestMenu(unittest.TestCase):
         menu = Menu(
             menu_items=["Padded Option"],
             padx=((0, 0), (2, 2), (0, 0)),
-            style="single"
+            style="single",
         )
         expected = (
             "┌─────────────────┐\n"
@@ -156,11 +155,7 @@ class TestMenu(unittest.TestCase):
 
     # Test menu with minimum width enforced
     def test_menu_with_min_width(self):
-        menu = Menu(
-            menu_items=["Wide Menu"],
-            min_width=30,
-            style="double"
-        )
+        menu = Menu(menu_items=["Wide Menu"], min_width=30, style="double")
         expected = (
             "╔════════════════════════════╗\n"
             "║Wide Menu                   ║\n"
@@ -177,8 +172,7 @@ class TestMenu(unittest.TestCase):
             min_width=21,
             style="single",
             center=(True, False, True),
-            padx=((0, 0), (2, 0), (0, 0))
-
+            padx=((0, 0), (2, 0), (0, 0)),
         )
         expected = (
             "┌───────────────────┐\n"
@@ -209,15 +203,18 @@ class TestMenu(unittest.TestCase):
     # Test center and padx conflict
     def test_center_padx_conflict(self):
         with self.assertRaises(ValueError):
-            Menu(menu_items=["Option 1"], center=(
-                True, False, False), padx=((1, 1), (0, 0), (0, 0)))
+            Menu(
+                menu_items=["Option 1"],
+                center=(True, False, False),
+                padx=((1, 1), (0, 0), (0, 0)),
+            )
 
     # Test multiple lines for header and footer
     def test_menu_with_multiline_header_footer(self):
         menu = Menu(
             menu_items=["Option 1"],
             header=["Line 1", "Line 2"],
-            footer=["Footer 1", "Footer 2"]
+            footer=["Footer 1", "Footer 2"],
         )
         expected = (
             "┌────────┐\n"

@@ -7,39 +7,23 @@ class TestMessage(unittest.TestCase):
     # Test for different styles
     def test_single_style_message(self):
         message = Message("Hello World", style="single")
-        expected = (
-            "┌───────────┐\n"
-            "│Hello World│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│Hello World│\n" "└───────────┘"
         self.assertEqual(message.message, expected)
 
     def test_double_style_message(self):
         message = Message("Hello World", style="double")
-        expected = (
-            "╔═══════════╗\n"
-            "║Hello World║\n"
-            "╚═══════════╝"
-        )
+        expected = "╔═══════════╗\n" "║Hello World║\n" "╚═══════════╝"
         self.assertEqual(message.message, expected)
 
     def test_ascii_style_message(self):
         message = Message("Hello World", style="ascii")
-        expected = (
-            "+-----------+\n"
-            "|Hello World|\n"
-            "+-----------+"
-        )
+        expected = "+-----------+\n" "|Hello World|\n" "+-----------+"
         self.assertEqual(message.message, expected)
 
     # Test padding and center alignment
     def test_message_with_padding(self):
         message = Message("Padded", padx=3, style="single")
-        expected = (
-            "┌────────────┐\n"
-            "│   Padded   │\n"
-            "└────────────┘"
-        )
+        expected = "┌────────────┐\n" "│   Padded   │\n" "└────────────┘"
         self.assertEqual(message.message, expected)
 
     def test_message_centered(self):
@@ -55,11 +39,7 @@ class TestMessage(unittest.TestCase):
     def test_multi_line_message(self):
         message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
         expected = (
-            "+------+\n"
-            "|Line 1|\n"
-            "|Line 2|\n"
-            "|Line 3|\n"
-            "+------+"
+            "+------+\n" "|Line 1|\n" "|Line 2|\n" "|Line 3|\n" "+------+"
         )
         self.assertEqual(message.message, expected)
 
@@ -67,20 +47,14 @@ class TestMessage(unittest.TestCase):
     def test_message_with_different_padx(self):
         message = Message("Pad Test", padx=(2, 5), style="single")
         expected = (
-            "┌───────────────┐\n"
-            "│  Pad Test     │\n"
-            "└───────────────┘"
+            "┌───────────────┐\n" "│  Pad Test     │\n" "└───────────────┘"
         )
         self.assertEqual(message.message, expected)
 
     # Test minimum width without centering
     def test_min_width_no_center(self):
         message = Message("Short", min_width=15, style="double")
-        expected = (
-            "╔═════════════╗\n"
-            "║Short        ║\n"
-            "╚═════════════╝"
-        )
+        expected = "╔═════════════╗\n" "║Short        ║\n" "╚═════════════╝"
         self.assertEqual(message.message, expected)
 
     # Test invalid inputs
@@ -104,20 +78,13 @@ class TestMessage(unittest.TestCase):
     # Test empty message
     def test_empty_message(self):
         message = Message("", style="ascii")
-        expected = (
-            "++\n"
-            "||\n"
-            "++"
-        )
+        expected = "++\n" "||\n" "++"
         self.assertEqual(message.message, expected)
 
     # Test empty list as message
     def test_empty_list_message(self):
         message = Message([], style="single")
-        expected = (
-            "┌┐\n"
-            "└┘"
-        )
+        expected = "┌┐\n" "└┘"
         self.assertEqual(message.message, expected)
 
 

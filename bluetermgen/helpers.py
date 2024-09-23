@@ -38,19 +38,24 @@ def calculate_inner_width(
         if len(padx) == 2 and all(isinstance(x, int) for x in padx):
             lpad, rpad = padx
 
-         # If padx has nested tuples with specific paddings for head, opt, and foot
-        elif len(padx) == 3 and all(len(p) == 2 and all(isinstance(x, int) for x in p) for p in padx):
+        # If padx has nested tuples with specific
+        # paddings for head, opt, and foot
+        elif len(padx) == 3 and all(
+            len(p) == 2 and all(isinstance(x, int) for x in p) for p in padx
+        ):
             (lpad, rpad), (opt_lpad, opt_rpad), (foot_lpad, foot_rpad) = padx
 
-        head = [
-            f"{' ' * lpad}{h}{' ' * rpad}" for h in head
-        ] if head else head
-        opt = [
-            f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt
-        ] if opt else opt
-        foot = [
-            f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot
-        ] if foot else foot
+        head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
+        opt = (
+            [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt]
+            if opt
+            else opt
+        )
+        foot = (
+            [f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot]
+            if foot
+            else foot
+        )
 
     max_str_width = max(
         max(len(h) for h in head) if head else 0,
@@ -59,9 +64,7 @@ def calculate_inner_width(
     )
 
     width = (
-        max_str_width
-        if max_str_width > minimum_width
-        else minimum_width - 2
+        max_str_width if max_str_width > minimum_width else minimum_width - 2
     )
 
     return width
@@ -92,8 +95,6 @@ DOUBLE_STYLE = {
     "mr": "╣",
     "mt": "╦",
     "mb": "╩",
-
-
 }
 SINGLE_STYLE = {
     "tl": "┌",
