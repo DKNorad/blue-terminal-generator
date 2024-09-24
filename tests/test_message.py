@@ -27,11 +27,35 @@ class TestMessage(unittest.TestCase):
         self.assertEqual(message.message, expected)
 
     def test_message_centered(self):
-        message = Message("Center", center=True, min_width=20, style="double")
+        message = Message(
+            "Center", align="center", min_width=20, style="double"
+        )
         expected = (
             "╔══════════════════╗\n"
             "║      Center      ║\n"
             "╚══════════════════╝"
+        )
+        self.assertEqual(message.message, expected)
+
+    # Test right alignment
+    def test_message_right_aligned(self):
+        message = Message("Right", align="right", min_width=20, style="ascii")
+        expected = (
+            "+------------------+\n"
+            "|             Right|\n"
+            "+------------------+"
+        )
+        self.assertEqual(message.message, expected)
+
+    # Test right alignment with padding
+    def test_message_right_aligned_with_padx(self):
+        message = Message(
+            "Right", align="right", min_width=20, padx=3, style="ascii"
+        )
+        expected = (
+            "+------------------+\n"
+            "|          Right   |\n"
+            "+------------------+"
         )
         self.assertEqual(message.message, expected)
 
@@ -73,7 +97,7 @@ class TestMessage(unittest.TestCase):
     # Test both center and padx raise ValueError
     def test_center_with_padx(self):
         with self.assertRaises(ValueError):
-            Message("Invalid combo", center=True, padx=(2, 2))
+            Message("Invalid combo", align="center", padx=(2, 2))
 
     # Test empty message
     def test_empty_message(self):

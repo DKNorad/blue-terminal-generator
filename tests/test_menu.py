@@ -123,7 +123,7 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1"],
             header="Centered Header",
             footer="Centered Footer",
-            center=(True, False, True),
+            align=("center", "left", "center"),
             min_width=21,
         )
         expected = (
@@ -133,6 +133,41 @@ class TestMenu(unittest.TestCase):
             "│Option 1           │\n"
             "├───────────────────┤\n"
             "│  Centered Footer  │\n"
+            "└───────────────────┘"
+        )
+        self.assertEqual(menu.menu, expected)
+
+    # Test right alignment of header and footer
+    def test_right_header_footer(self):
+        menu = Menu(
+            menu_items=["Option 1"],
+            header="Right Header",
+            footer="Right Footer",
+            align=("right", "left", "right"),
+            min_width=21,
+        )
+        expected = (
+            "┌───────────────────┐\n"
+            "│       Right Header│\n"
+            "├───────────────────┤\n"
+            "│Option 1           │\n"
+            "├───────────────────┤\n"
+            "│       Right Footer│\n"
+            "└───────────────────┘"
+        )
+        self.assertEqual(menu.menu, expected)
+
+    # Test right alignment with padding
+    def test_right_aligned_with_padding(self):
+        menu = Menu(
+            menu_items=["Option 1"],
+            align=("left", "right", "left"),
+            min_width=21,
+            padx=((0, 0), (2, 2), (0, 0)),
+        )
+        expected = (
+            "┌───────────────────┐\n"
+            "│         Option 1  │\n"
             "└───────────────────┘"
         )
         self.assertEqual(menu.menu, expected)
@@ -169,7 +204,7 @@ class TestMenu(unittest.TestCase):
             footer="Centered Footer",
             min_width=21,
             style="single",
-            center=(True, False, True),
+            align=("center", "left", "center"),
             padx=((0, 0), (2, 0), (0, 0)),
         )
         expected = (
@@ -203,7 +238,7 @@ class TestMenu(unittest.TestCase):
         with self.assertRaises(ValueError):
             Menu(
                 menu_items=["Option 1"],
-                center=(True, False, False),
+                align=("center", "left", "left"),
                 padx=((1, 1), (0, 0), (0, 0)),
             )
 

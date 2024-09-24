@@ -23,13 +23,10 @@ class Menu:
             - "letter_upper_parentheses" - A)
             - "letter_lower_dot" - a.
             - "letter_lower_parentheses" - b)
-        center (tuple, optional):
-            Whether to center parts of the menu.
-            Defaults to (False, False, False).
+        align (tuple, optional):
+            How to align the menu parts.
+            Defaults to ("left", "left", "left").
             (a, b, c) = (header, options, footer)
-            a = header center
-            b = options center
-            c = footer center
         min_width (int, optional):
             The minimum width of the menu. Defaults to 0.
         style (str, optional):
@@ -54,7 +51,9 @@ class Menu:
             "letter_upper_parentheses", "letter_lower_dot",
             "letter_lower_parentheses".
         ValueError:
-            If the 'center' property is not a tuple of length 3.
+            If the 'align' property is not a tuple of length 3
+            and any element is not part of the list:
+            ["left", "center", "right"].
         ValueError:
             If the 'min_width' property is not an integer.
         ValueError:
@@ -64,15 +63,15 @@ class Menu:
             - A single positive integer.
             - A tuple of 3 tuples, each containing 2 positive integers.
         ValueError:
-            If the 'padx' property is set and the 'center' property is True for
-            the same part of the menu.
+            If the 'padx' property is set and the 'align' property is "center"
+            for the same part of the menu.
 
     Examples:
         >>> menu = Menu(
         ...     menu_items=["Option 1", "Option 2", "Option 3", "Option 4"],
         ...     header="Main Menu",
         ...     footer="x) Exit.",
-        ...     center=(True, False, False),
+        ...     align=("center", "left", "left"),
         ...     min_width=30,
         ...     index="letter_lower_parentheses",
         ...     padx=((0, 0), (1, 0), (1, 0))
@@ -85,7 +84,7 @@ class Menu:
         header: str | list = "",
         footer: str | list = "",
         index: str = "None",
-        center: tuple = (False, False, False),
+        align: tuple = ("left", "left", "left"),
         min_width: int = 0,
         style: str = "single",
         padx: tuple = ((0, 0), (0, 0), (0, 0)),
@@ -94,7 +93,7 @@ class Menu:
         self.header = header
         self.footer = footer
         self.index = index
-        self.center = center
+        self.align = align
         self.min_width = min_width
         self.style = style
         self.padx = padx
@@ -173,17 +172,20 @@ class Menu:
             )
 
     @property
-    def center(self) -> bool:
-        return self.__center
+    def align(self) -> bool:
+        return self.__align
 
-    @center.setter
-    def center(self, value: bool):
+    @align.setter
+    def align(self, value: bool):
+        valid_alignments = ["left", "center", "right"]
         if isinstance(value, tuple) and all(
-            isinstance(x, bool) for x in value
+            alignment in valid_alignments for alignment in value
         ):
-            self.__center = value
+            self.__align = value
         else:
-            raise ValueError("The 'center' property must be a boolean.")
+            raise ValueError(
+                f"The 'align' property must be one of {valid_alignments}."
+            )
 
     @property
     def min_width(self) -> int:
@@ -244,10 +246,10 @@ class Menu:
 
         # Validate 'center' conflict with padding
         for idx, section in enumerate(["header", "menu items", "footer"]):
-            if self.__center[idx] and self.__padx[idx] != (0, 0):
+            if self.align[idx] == "center" and self.__padx[idx] != (0, 0):
                 raise ValueError(
                     f"""The 'padx' for the '{section}' cannot be used
-                    when 'center' is True for the same."""
+                    when 'align' is "center" for the same."""
                 )
 
     def get_width(self) -> int:
@@ -284,12 +286,21 @@ class Menu:
         )
 
     def generate_menu(self) -> str:
-        def format_line(line: str, centered: bool, padx: tuple) -> str:
-            """Helper to format a line based on center alignment."""
-            if centered:
+        def format_line(line: str, alignment: str, padx: tuple) -> str:
+            """Helper to format a line based on alignment."""
+            if alignment == "center":
                 return (
                     f"{self.__style['v']}"
                     f"{line:^{self._inner_width}}"
+                    f"{self.__style['v']}\n"
+                )
+            elif alignment == "right":
+                lpadx, rpadx = padx
+                return (
+                    f"{self.__style['v']}"
+                    f"{' ' * (self._inner_width - len(line) - rpadx)}"
+                    f"{line}"
+                    f"{' ' * rpadx}"
                     f"{self.__style['v']}\n"
                 )
             else:
@@ -328,9 +339,7 @@ class Menu:
         # Add header lines
         if self.__header[0]:
             for line in self.__header:
-                item.append(
-                    format_line(line, self.__center[0], self.__padx[0])
-                )
+                item.append(format_line(line, self.__align[0], self.__padx[0]))
             item.append(
                 f"{self.__style['ml']}"
                 f"{self.__style['h'] * self._inner_width}"
@@ -341,7 +350,7 @@ class Menu:
         for idx, line in enumerate(self.__menu_items):
             if self.__index:
                 line = add_numbering(line, idx)
-            item.append(format_line(line, self.__center[1], self.__padx[1]))
+            item.append(format_line(line, self.__align[1], self.__padx[1]))
 
         # Add footer lines
         if self.__footer[0]:
@@ -351,9 +360,7 @@ class Menu:
                 f"{self.__style['mr']}\n"
             )
             for line in self.__footer:
-                item.append(
-                    format_line(line, self.__center[2], self.__padx[2])
-                )
+                item.append(format_line(line, self.__align[2], self.__padx[2]))
 
         # Add the bottom line
         item.append(

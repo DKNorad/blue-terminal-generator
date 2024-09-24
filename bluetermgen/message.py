@@ -9,8 +9,8 @@ class Message:
         message (str | list):
             The text for the message. Can be a string or a list of strings
             for multiple lines.
-        center (bool, optional):
-            Whether to center the text. Defaults to False.
+        align (str, optional):
+            How to align the text. Defaults to 'left'.
         min_width (int, optional):
             The minimum width of the frame. Defaults to 0.
         style (str, optional):
@@ -24,7 +24,8 @@ class Message:
         ValueError:
             If the 'message' property is not a string or a list of strings.
         ValueError:
-            If the 'center' property is not a boolean.
+            If the 'align' property is not a string from the list:
+            ["left", "center", "right"].
         ValueError:
             If the 'min_width' property is not an integer.
         ValueError:
@@ -35,24 +36,25 @@ class Message:
         ValueError:
             If the 'padx' property is not an integer.
         ValueError:
-            If the 'padx' property is set while the 'center' property is True.
+            If the 'padx' property is set
+            while the 'align' property is "center".
 
     Example:
         >>> message = Message(["", "Hello World!", ""],
-        ...                    style="double", center=True, min_width=20)
+        ...                    style="double", align="center", min_width=20)
     """
 
     def __init__(
         self,
         message_text: str | list,
-        center: bool = False,
+        align: str = "left",
         min_width: int = 0,
         style: str = "single",
         padx: tuple | int = (0, 0),
     ) -> None:
 
         self.message_text = message_text
-        self.center = center
+        self.align = align
         self.min_width = min_width
         self.style = style
         self.padx = padx
@@ -80,15 +82,17 @@ class Message:
             )
 
     @property
-    def center(self) -> bool:
-        return self.__center
+    def align(self) -> str:
+        return self.__align
 
-    @center.setter
-    def center(self, value: bool):
-        if isinstance(value, bool):
-            self.__center = value
+    @align.setter
+    def align(self, value: str):
+        if isinstance(value, str) and value in ["left", "center", "right"]:
+            self.__align = value
         else:
-            raise ValueError("The 'center' property must be a boolean.")
+            raise ValueError(
+                "The 'align' property must be 'left', 'center', or 'right'"
+            )
 
     @property
     def min_width(self) -> int:
@@ -133,15 +137,16 @@ class Message:
             self.__padx = value
         else:
             raise ValueError(
-                """
-                             The 'padx' property must be a tuple of length 2
-                             containing positive integers.
-                             """
+                "The 'padx' property must be a tuple of length 2 containing positive integers."
             )
 
-        if self.__center and self.__padx[0] > 0 and self.__padx[1] > 0:
+        if (
+            self.__align == "center"
+            and self.__padx[0] > 0
+            and self.__padx[1] > 0
+        ):
             raise ValueError(
-                "The 'padx' property cannot be used when 'center' is True."
+                "The 'padx' property cannot be used when 'align' is 'center'."
             )
 
     def get_width(self) -> int:
@@ -182,9 +187,16 @@ class Message:
 
         # Add message lines
         for line in self._message_text:
-            if self.__center:
-                # Center the line in the available width
+            if self.align == "center":
+                # Center align the line
                 formatted_line = f"{line:^{self._inner_width}}"
+            elif self.align == "right":
+                # Right align the line with padding
+                padding_left = " " * (
+                    self._inner_width - len(line) - self.__padx[1]
+                )
+                padding_right = " " * self.__padx[1]
+                formatted_line = f"{padding_left}{line}{padding_right}"
             else:
                 # Left align the line with padding
                 padding_left = " " * self.__padx[0]
