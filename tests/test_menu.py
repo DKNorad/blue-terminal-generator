@@ -40,7 +40,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_upper_dot(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_upper_dot",
+            index="letter_upper_dot",
         )
         expected = (
             "┌───────────┐\n"
@@ -54,7 +54,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_lower_dot(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_lower_dot",
+            index="letter_lower_dot",
         )
         expected = (
             "┌───────────┐\n"
@@ -66,9 +66,7 @@ class TestMenu(unittest.TestCase):
 
     # Test menu with number-based numbering (number, dot)
     def test_menu_number_dot(self):
-        menu = Menu(
-            menu_items=["Option 1", "Option 2"], numbering_type="number_dot"
-        )
+        menu = Menu(menu_items=["Option 1", "Option 2"], index="number_dot")
         expected = (
             "┌───────────┐\n"
             "│1. Option 1│\n"
@@ -81,7 +79,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_upper_parantheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_upper_parentheses",
+            index="letter_upper_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -95,7 +93,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_letter_lower_parantheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="letter_lower_parentheses",
+            index="letter_lower_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -109,7 +107,7 @@ class TestMenu(unittest.TestCase):
     def test_menu_number_parentheses(self):
         menu = Menu(
             menu_items=["Option 1", "Option 2"],
-            numbering_type="number_parentheses",
+            index="number_parentheses",
         )
         expected = (
             "┌───────────┐\n"
@@ -191,9 +189,9 @@ class TestMenu(unittest.TestCase):
             Menu(menu_items="Invalid Items")  # Should be a list of strings
 
     # Test invalid numbering type
-    def test_invalid_numbering_type(self):
+    def test_invalid_index(self):
         with self.assertRaises(ValueError):
-            Menu(menu_items=["Option 1"], numbering_type="invalid")
+            Menu(menu_items=["Option 1"], index="invalid")
 
     # Test invalid padding tuple
     def test_invalid_padx(self):
