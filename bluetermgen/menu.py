@@ -14,7 +14,7 @@ class Menu:
         footer (str | list, optional):
             The menu footer. Can be a string or a list of strings for
             multiple lines. Defaults to "".
-        numbering_type (str, optional):
+        index (str, optional):
             The type of numbering to use:
             - "None" - No numbering.
             - "number_dot" - 1.
@@ -49,7 +49,7 @@ class Menu:
         ValueError:
             If the 'footer' property is not a string or a list of strings.
         ValueError:
-            If the 'numbering_type' property is not a string from the list:
+            If the 'index' property is not a string from the list:
             "None", "number_dot", "number_parentheses", "letter_upper_dot",
             "letter_upper_parentheses", "letter_lower_dot",
             "letter_lower_parentheses".
@@ -74,7 +74,7 @@ class Menu:
         ...     footer="x) Exit.",
         ...     center=(True, False, False),
         ...     min_width=30,
-        ...     numbering_type="letter_lower_parentheses",
+        ...     index="letter_lower_parentheses",
         ...     padx=((0, 0), (1, 0), (1, 0))
         ... )
     """
@@ -84,7 +84,7 @@ class Menu:
         menu_items: list,
         header: str | list = "",
         footer: str | list = "",
-        numbering_type: str = "None",
+        index: str = "None",
         center: tuple = (False, False, False),
         min_width: int = 0,
         style: str = "single",
@@ -93,7 +93,7 @@ class Menu:
         self.menu_items = menu_items
         self.header = header
         self.footer = footer
-        self.numbering_type = numbering_type
+        self.index = index
         self.center = center
         self.min_width = min_width
         self.style = style
@@ -151,11 +151,11 @@ class Menu:
             )
 
     @property
-    def numbering_type(self) -> str:
-        return self.__numbering_type
+    def index(self) -> str:
+        return self.__index
 
-    @numbering_type.setter
-    def numbering_type(self, value: str):
+    @index.setter
+    def index(self, value: str):
         valid_types = [
             "None",
             "number_dot",
@@ -166,10 +166,10 @@ class Menu:
             "letter_lower_parentheses",
         ]
         if isinstance(value, str) and value in valid_types:
-            self.__numbering_type = value
+            self.__index = value
         else:
             raise ValueError(
-                f"The 'numbering_type' property must be one of {valid_types}."
+                f"The 'index' property must be one of {valid_types}."
             )
 
     @property
@@ -265,7 +265,7 @@ class Menu:
         return self._height
 
     def calculate_width(self) -> int:
-        if self.__numbering_type != "None":
+        if self.__index != "None":
             modified_menu_items = [
                 f"{idx + 1}. {line}"
                 for idx, line in enumerate(self.__menu_items)
@@ -276,7 +276,7 @@ class Menu:
             foot=self.__footer,
             opt=(
                 self.__menu_items
-                if self.__numbering_type == "None"
+                if self.__index == "None"
                 else modified_menu_items
             ),
             minimum_width=self.__min_width,
@@ -304,7 +304,7 @@ class Menu:
 
         def add_numbering(line: str, idx: int) -> str:
             """Helper to add numbering to a line for the menu items."""
-            numbering_type_map = {
+            index_map = {
                 "number_dot": f"{idx + 1}. ",
                 "number_parentheses": f"{idx + 1}) ",
                 "letter_lower_dot": f"{chr(ord('a') + idx)}. ",
@@ -312,7 +312,7 @@ class Menu:
                 "letter_lower_parentheses": f"{chr(ord('a') + idx)}) ",
                 "letter_upper_parentheses": f"{chr(ord('A') + idx)}) ",
             }
-            prefix = numbering_type_map.get(self.__numbering_type, "")
+            prefix = index_map.get(self.__index, "")
             return f"{prefix}{line}"
 
         # Start the menu with the top line
@@ -339,7 +339,7 @@ class Menu:
 
         # Add menu items with optional numbering
         for idx, line in enumerate(self.__menu_items):
-            if self.__numbering_type:
+            if self.__index:
                 line = add_numbering(line, idx)
             item.append(format_line(line, self.__center[1], self.__padx[1]))
 
