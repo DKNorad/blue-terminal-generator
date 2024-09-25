@@ -3,68 +3,95 @@ from .helpers import calculate_inner_width, STYLES
 
 class Menu:
     """
-    Prints a menu in the terminal.
+    Generates a menu with borders with different options.
 
     Args:
         menu_items (list):
             The menu options.
+
         header (str, optional):
             The menu header. Can be a string or a list of strings for
-            multiple lines. Defaults to "".
+            multiple lines. Defaults to `""`.
+
         footer (str | list, optional):
             The menu footer. Can be a string or a list of strings for
-            multiple lines. Defaults to "".
+            multiple lines. Defaults to `""`.
+
         index (str, optional):
-            The type of numbering to use:
-            - "None" - No numbering.
-            - "number_dot" - 1.
-            - "number_parentheses" - 1)
-            - "letter_upper_dot" - A.
-            - "letter_upper_parentheses" - A)
-            - "letter_lower_dot" - a.
-            - "letter_lower_parentheses" - b)
+            The type of numbering to use. Default to `"None"`.
+
+            Options:
+            "None" - No numbering.
+            "number_dot" - 1.
+            "number_parentheses" - 1)
+            "letter_upper_dot" - A.
+            "letter_upper_parentheses" - A)
+            "letter_lower_dot" - a.
+            "letter_lower_parentheses" - b)
+
         align (tuple, optional):
             How to align the menu parts.
-            Defaults to ("left", "left", "left").
+            Defaults to `("left", "left", "left")`.
+
+            Example:
             (a, b, c) = (header, options, footer)
+
         min_width (int, optional):
-            The minimum width of the menu. Defaults to 0.
+            The minimum width of the menu. Defaults to `0`.
+
         style (str, optional):
-            The frame style to use. Defaults to "single".
+            The frame style to use. Defaults to `"single"`.
+
         padx (tuple | int, optional):
             Padding to add around the menu parts.
-            Defaults to ((0, 0), (0, 0), (0, 0)).
+            Defaults to `((0, 0), (0, 0), (0, 0))`.
+
+            Example:
             (1, 1) = (left, right)
             ((1, 1), (1, 1), (1, 1)) = ((header), (footer), (options))
             1 = (1, 1)
 
     Raises:
         ValueError:
-            If the 'menu_items' property is not a list.
+            If the `'menu_items'` property is not a list.
+
         ValueError:
-            If the 'header' property is not a string or a list of strings.
+            If the `'header'` property is not a string or a list of strings.
+
         ValueError:
-            If the 'footer' property is not a string or a list of strings.
+            If the `'footer'` property is not a string or a list of strings.
+
         ValueError:
-            If the 'index' property is not a string from the list:
-            "None", "number_dot", "number_parentheses", "letter_upper_dot",
-            "letter_upper_parentheses", "letter_lower_dot",
-            "letter_lower_parentheses".
+            If the `'index'` property is not a string from the list:
+            "None"
+            "number_dot"
+            "number_parentheses"
+            "letter_upper_dot"
+            "letter_upper_parentheses"
+            "letter_lower_dot"
+            "letter_lower_parentheses"
+
         ValueError:
             If the 'align' property is not a tuple of length 3
             and any element is not part of the list:
-            ["left", "center", "right"].
+            "left"
+            "center"
+            "right"
+
         ValueError:
-            If the 'min_width' property is not an integer.
+            If the `'min_width'` property is not an integer.
+
         ValueError:
-            If the 'style' property is not a string.
+            If the `'style'` property is not a string.
+
         ValueError:
-            If the 'padx' is not:
+            If the `'padx'` is not:
             - A single positive integer.
             - A tuple of 3 tuples, each containing 2 positive integers.
+
         ValueError:
-            If the 'padx' property is set and the 'align' property is "center"
-            for the same part of the menu.
+            If the `'padx'` property is set and the `'align'` property is
+            `"center"` for the same part of the menu.
 
     Examples:
         >>> menu = Menu(
