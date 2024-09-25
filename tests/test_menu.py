@@ -262,6 +262,45 @@ class TestMenu(unittest.TestCase):
         )
         self.assertEqual(menu.menu, expected)
 
+    # Test the get_width method with
+    def test_get_width(self):
+        menu = Menu(
+            menu_items=["A very wide option 1"],
+            header="Header",
+            footer="Footer",
+            align=("left", "left", "left"),
+            min_width=15,
+        )
+        self.assertEqual(menu.get_width(), 22)
+
+    # Test the get_width method with multiple lines
+    def test_get_width_multi_line(self):
+        menu = Menu(
+            menu_items=["Option 1", "Option 2"],
+            header=["Header 1", "Header 2"],
+            footer="Footer",
+        )
+        self.assertEqual(menu.get_width(), 10)
+
+    # Test the get_height method
+    def test_get_height(self):
+        menu = Menu(
+            menu_items=["Option 1"],
+            header="Header",
+            footer="Footer",
+            align=("left", "left", "left"),
+            min_width=21,
+        )
+        self.assertEqual(menu.get_height(), 7)
+
+    # Test the get_height method with multiple lines
+    def test_get_height_multi_line(self):
+        menu = Menu(
+            menu_items=["Option 1", "Option 2"],
+            header=["Header 1", "Header 2"],
+        )
+        self.assertEqual(menu.get_height(), 7)
+
 
 if __name__ == "__main__":
     unittest.main()
