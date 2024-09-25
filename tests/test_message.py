@@ -20,6 +20,17 @@ class TestMessage(unittest.TestCase):
         expected = "+-----------+\n" "|Hello World|\n" "+-----------+"
         self.assertEqual(message.message, expected)
 
+    # Test the __str__ dunder method
+    def test_str_method(self):
+        message = Message("Hello World", style="single")
+        expected = "┌───────────┐\n" "│Hello World│\n" "└───────────┘"
+        self.assertEqual(str(message), expected)
+
+    def test_str_method_with_padding(self):
+        message = Message("Padded", padx=3, style="single")
+        expected = "┌────────────┐\n" "│   Padded   │\n" "└────────────┘"
+        self.assertEqual(str(message), expected)
+
     # Test padding and center alignment
     def test_message_with_padding(self):
         message = Message("Padded", padx=3, style="single")

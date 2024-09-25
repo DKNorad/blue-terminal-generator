@@ -97,10 +97,10 @@ class Menu:
         self.min_width = min_width
         self.style = style
         self.padx = padx
-        self._inner_width = self.calculate_width()
+        self._inner_width = self._calculate_width()
         self._width = 0
         self._height = 0
-        self._menu = self.generate_menu()
+        self._menu = self._generate_menu()
 
     @property
     def menu_items(self) -> list:
@@ -266,7 +266,7 @@ class Menu:
         """
         return self._height
 
-    def calculate_width(self) -> int:
+    def _calculate_width(self) -> int:
         if self.__index != "None":
             modified_menu_items = [
                 f"{idx + 1}. {line}"
@@ -285,7 +285,7 @@ class Menu:
             padx=self.__padx,
         )
 
-    def generate_menu(self) -> str:
+    def _generate_menu(self) -> str:
         def format_line(line: str, alignment: str, padx: tuple) -> str:
             """Helper to format a line based on alignment."""
             if alignment == "center":
@@ -376,6 +376,9 @@ class Menu:
 
     @property
     def menu(self) -> str:
+        return self._menu
+
+    def __str__(self) -> str:
         return self._menu
 
 

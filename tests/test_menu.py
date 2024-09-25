@@ -16,6 +16,38 @@ class TestMenu(unittest.TestCase):
         )
         self.assertEqual(menu.menu, expected)
 
+    # Test the __str__ dunder method
+    def test_str(self):
+        menu = Menu(menu_items=["Option 1", "Option 2", "Option 3"])
+        expected = (
+            "┌────────┐\n"
+            "│Option 1│\n"
+            "│Option 2│\n"
+            "│Option 3│\n"
+            "└────────┘"
+        )
+        self.assertEqual(str(menu), expected)
+
+    # Test the __str__ dunder method with header and footer
+    def test_str_with_header_footer(self):
+        menu = Menu(
+            menu_items=["Option 1", "Option 2", "Option 3"],
+            header="Main Menu",
+            footer="x) Exit",
+        )
+        expected = (
+            "┌─────────┐\n"
+            "│Main Menu│\n"
+            "├─────────┤\n"
+            "│Option 1 │\n"
+            "│Option 2 │\n"
+            "│Option 3 │\n"
+            "├─────────┤\n"
+            "│x) Exit  │\n"
+            "└─────────┘"
+        )
+        self.assertEqual(str(menu), expected)
+
     # Test menu with a header and footer
     def test_menu_with_header_footer(self):
         menu = Menu(

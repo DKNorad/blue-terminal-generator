@@ -58,10 +58,10 @@ class Message:
         self.min_width = min_width
         self.style = style
         self.padx = padx
-        self._inner_width = self.calculate_width()
+        self._inner_width = self._calculate_width()
         self._width = 0
         self._height = 0
-        self._message = self.generate_message()
+        self._message = self._generate_message()
 
     @property
     def message_text(self) -> str | list:
@@ -163,7 +163,7 @@ class Message:
         """
         return self._height
 
-    def calculate_width(self) -> int:
+    def _calculate_width(self) -> int:
         """
         Returns:
             int: The width of the message excluding the borders.
@@ -174,7 +174,7 @@ class Message:
             padx=self.__padx,
         )
 
-    def generate_message(self) -> str:
+    def _generate_message(self) -> str:
         # Add the top line
         item = [
             f"{self.__style['tl']}"
@@ -223,6 +223,9 @@ class Message:
 
     @property
     def message(self) -> str:
+        return self._message
+
+    def __str__(self) -> str:
         return self._message
 
 
