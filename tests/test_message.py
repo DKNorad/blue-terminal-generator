@@ -111,6 +111,26 @@ class TestMessage(unittest.TestCase):
         expected = "┌┐\n" "└┘"
         self.assertEqual(message.message, expected)
 
+    # Test the get_width method
+    def test_get_width(self):
+        message = Message("Test", style="ascii")
+        self.assertEqual(message.get_width(), 6)
+
+    # Test the get_width method with multiple lines
+    def test_get_width_multi_line(self):
+        message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
+        self.assertEqual(message.get_width(), 8)
+
+    # Test the get_height method
+    def test_get_height(self):
+        message = Message("Test", style="ascii")
+        self.assertEqual(message.get_height(), 3)
+
+    # Test the get_height method with multiple lines
+    def test_get_height_multi_line(self):
+        message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
+        self.assertEqual(message.get_height(), 5)
+
 
 if __name__ == "__main__":
     unittest.main()
