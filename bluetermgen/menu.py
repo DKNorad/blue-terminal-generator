@@ -353,7 +353,7 @@ class Menu:
             prefix = index_map.get(self.__index, "")
             return f"{prefix}{line}"
 
-        # Start the menu with the top line
+        # Prepare the top border
         item = [
             f"{self.__style['tl']}"
             f"{self.__style['h'] * self._inner_width}"
@@ -363,23 +363,25 @@ class Menu:
         # Get the width of the menu
         self._width = len(item[0].strip("\n"))
 
-        # Add header lines
+        # Prepare the menu headers
         if self.__header[0]:
             for line in self.__header:
                 item.append(format_line(line, self.__align[0], self.__padx[0]))
+
+            # Prepare the headers bottom border
             item.append(
                 f"{self.__style['ml']}"
                 f"{self.__style['h'] * self._inner_width}"
                 f"{self.__style['mr']}\n"
             )
 
-        # Add menu items with optional numbering
+        # Prepare the menu items with optional numbering
         for idx, line in enumerate(self.__menu_items):
             if self.__index:
                 line = add_numbering(line, idx)
             item.append(format_line(line, self.__align[1], self.__padx[1]))
 
-        # Add footer lines
+        # Prepare the footer data
         if self.__footer[0]:
             item.append(
                 f"{self.__style['ml']}"
