@@ -1,4 +1,5 @@
 from .helpers import calculate_inner_width, STYLES
+from typing import Union, List, Tuple
 
 
 class Message:
@@ -60,11 +61,11 @@ class Message:
 
     def __init__(
         self,
-        message_text: str | list,
+        message_text: Union[str, List],
         align: str = "left",
         min_width: int = 0,
         style: str = "single",
-        padx: tuple | int = (0, 0),
+        padx: Union[Tuple, int] = (0, 0),
     ) -> None:
 
         self.message_text = message_text
@@ -78,11 +79,11 @@ class Message:
         self._message = self._generate_message()
 
     @property
-    def message_text(self) -> str | list:
+    def message_text(self) -> Union[str, List]:
         return self._message_text
 
     @message_text.setter
-    def message_text(self, value: str | list):
+    def message_text(self, value: Union[str, List]):
         if isinstance(value, str):
             self._message_text = value.split("\n")
         elif isinstance(value, list):
@@ -140,7 +141,7 @@ class Message:
         return self.__padx
 
     @padx.setter
-    def padx(self, value: tuple | int):
+    def padx(self, value: Union[Tuple, int]):
         if isinstance(value, int) and value >= 0:
             self.__padx = (value, value)
         elif (

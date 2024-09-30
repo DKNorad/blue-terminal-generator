@@ -1,9 +1,12 @@
+from typing import Union, Tuple
+
+
 def calculate_inner_width(
     head: list,
     foot: str = None,
     opt: list = None,
     minimum_width: int = 0,
-    padx: tuple = (0, 0),
+    padx: Tuple = (0, 0),
 ) -> int:
     """
     Help function to calculate the width of the item based on the longest
@@ -79,7 +82,7 @@ def calculate_table_inner_width(
     table_data: list,
     headers: list,
     padx: tuple,
-    minimum_width: int | dict,
+    minimum_width: Union[int, dict],
     is_dict_table: bool,
     indexing: bool,
 ) -> dict:
@@ -141,7 +144,8 @@ def calculate_table_inner_width(
     if headers != "None":
         for col_i, header in enumerate(headers, starting_index):
             column_widths[col_i] = max(
-                len(header) + sum(header_padx), minimum_width)
+                len(header) + sum(header_padx), minimum_width
+            )
 
     if is_dict_table:
         for row in table_data:
@@ -151,7 +155,8 @@ def calculate_table_inner_width(
                     column_widths[col_i] = max(col_width, minimum_width)
                 else:
                     column_widths[col_i] = max(
-                        column_widths[col_i], col_width, minimum_width)
+                        column_widths[col_i], col_width, minimum_width
+                    )
 
     else:
         for row in table_data:
@@ -162,7 +167,8 @@ def calculate_table_inner_width(
                     column_widths[col_index] = col_width
                 else:
                     column_widths[col_index] = max(
-                        column_widths[col_index], col_width, minimum_width)
+                        column_widths[col_index], col_width, minimum_width
+                    )
 
     return column_widths
 

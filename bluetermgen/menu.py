@@ -1,3 +1,4 @@
+from typing import Union, Tuple
 from .helpers import calculate_inner_width, STYLES
 
 
@@ -108,13 +109,13 @@ class Menu:
     def __init__(
         self,
         menu_items: list,
-        header: str | list = "",
-        footer: str | list = "",
+        header: Union[str, list] = "",
+        footer: Union[str, list] = "",
         index: str = "None",
-        align: tuple = ("left", "left", "left"),
+        align: Tuple = ("left", "left", "left"),
         min_width: int = 0,
         style: str = "single",
-        padx: tuple = ((0, 0), (0, 0), (0, 0)),
+        padx: Tuple = ((0, 0), (0, 0), (0, 0)),
     ) -> None:
         self.menu_items = menu_items
         self.header = header
@@ -134,7 +135,7 @@ class Menu:
         return self.__menu_items
 
     @menu_items.setter
-    def menu_items(self, value: str | list):
+    def menu_items(self, value: Union[str, list]):
         if isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__menu_items = value
         else:
@@ -143,11 +144,11 @@ class Menu:
             )
 
     @property
-    def header(self) -> str | list:
+    def header(self) -> Union[str, list]:
         return self.__header
 
     @header.setter
-    def header(self, value: str | list):
+    def header(self, value: Union[str, list]):
         if isinstance(value, str):
             self.__header = value.split("\n")
         elif isinstance(value, list) and all(
@@ -160,11 +161,11 @@ class Menu:
             )
 
     @property
-    def footer(self) -> str | list:
+    def footer(self) -> Union[str, list]:
         return self.__footer
 
     @footer.setter
-    def footer(self, value: str | list):
+    def footer(self, value: Union[str, list]):
         if isinstance(value, str):
             self.__footer = value.split("\n")
         elif isinstance(value, list) and all(
@@ -246,7 +247,7 @@ class Menu:
         return self.__padx
 
     @padx.setter
-    def padx(self, value: tuple | int):
+    def padx(self, value: Union[Tuple, int]):
         def validate_padx_structure(padx_tuple):
             """
             Helper function to validate that the tuple structure is correct.
