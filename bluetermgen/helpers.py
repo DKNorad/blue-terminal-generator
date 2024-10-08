@@ -188,6 +188,21 @@ mb - middle bottom
 hb - header bottom
 """
 
+BOLD_STYLE = {
+    "tl": "┏",
+    "tr": "┓",
+    "bl": "┗",
+    "br": "┛",
+    "h": "━",
+    "v": "┃",
+    "c": "╋",
+    "ml": "┣",
+    "mr": "┫",
+    "mt": "┳",
+    "mb": "┻",
+    "hb": "╍",
+}
+
 DOUBLE_STYLE = {
     "tl": "╔",
     "tr": "╗",
@@ -214,7 +229,7 @@ SINGLE_STYLE = {
     "mr": "┤",
     "mt": "┬",
     "mb": "┴",
-    "hb": "─",
+    "hb": "╌",
 }
 ASCII_STYLE = {
     "tl": "+",
@@ -234,5 +249,6 @@ ASCII_STYLE = {
 STYLES = {
     "double": DOUBLE_STYLE,
     "single": SINGLE_STYLE,
-    "ascii": ASCII_STYLE,
+    "simple": ASCII_STYLE,
+    "bold": BOLD_STYLE,
 }
