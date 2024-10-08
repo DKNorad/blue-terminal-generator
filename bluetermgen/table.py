@@ -104,7 +104,8 @@ class Table:
             If the `min_width` is not an integer or a dictionary.
 
         ValueError:
-            If the `style` is not a valid style.
+            If the `style` property is not a string or a valid option.
+            Defaults to `single`.
 
         ValueError:
             If the `padx` is not a tuple or an integer.

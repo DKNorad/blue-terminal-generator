@@ -12,13 +12,13 @@ class Message:
             for multiple lines.
 
         align (str, optional):
-            How to align the text. Defaults to `'left'`.
+            How to align the text. Defaults to `left`.
 
         min_width (int, optional):
             The minimum width of the frame. Defaults to `0`.
 
         style (str, optional):
-            The frame style to use. Defaults to `'single'`.
+            The frame style to use. Defaults to `single`.
 
         padx (tuple | int, optional):
             Padding to add around the text. Defaults to `(0, 0)`.
@@ -29,30 +29,31 @@ class Message:
 
     Raises:
         ValueError:
-            If the `'message'` property is not a string or a list of strings.
+            If the `message` property is not a string or a list of strings.
 
         ValueError:
-            If the `'align'` property is not a string from the list:
+            If the `align` property is not a string from the list:
             "left"
             "center"
             "right"
 
         ValueError:
-            If the `'min_width'` property is not an integer.
+            If the `min_width` property is not an integer.
 
         ValueError:
-            If the `'style'` property is not a string.
+            If the `style` property is not a string or a valid option.
+            Defaults to `single`.
 
         ValueError:
-            If the `'padx'` property is not a tuple of length 2
+            If the `padx` property is not a tuple of length 2
             containing integers.
 
         ValueError:
-            If the `'padx'` property is not an integer.
+            If the `padx` property is not an integer.
 
         ValueError:
-            If the `'padx'` property is set
-            while the `'align'` property is `"center"`.
+            If the `padx` property is set
+            while the `align` property is `center`.
 
     Example:
         >>> message = Message(["", "Hello World!", ""],

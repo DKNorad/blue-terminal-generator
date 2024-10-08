@@ -189,9 +189,9 @@ class TestTable(unittest.TestCase):
         self.assertEqual(str(table), expected)
 
     # Test table with ASCII border style
-    def test_table_with_ascii_style(self):
+    def test_table_with_simple_style(self):
         data = [["Header 1", "Header 2"], ["Cell 1", "Cell 2"]]
-        table = Table(data, style='ascii')
+        table = Table(data, style='simple')
         expected = (
             "+--------+--------+\n"
             "|Header 1|Header 2|\n"

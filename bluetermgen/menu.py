@@ -41,7 +41,8 @@ class Menu:
             The minimum width of the menu. Defaults to `0`.
 
         style (str, optional):
-            The frame style to use. Defaults to `single`.
+            If the `style` property is not a string or a valid option.
+            Defaults to `single`.
 
         padx (tuple | int, optional):
             Padding to add around the menu parts.
@@ -83,7 +84,7 @@ class Menu:
             If the `min_width` property is not an integer.
 
         ValueError:
-            If the `style` property is not a string.
+            If the `style` property is not a string or one of the valid styles.
 
         ValueError:
             If the `padx` is not:
@@ -91,7 +92,7 @@ class Menu:
             - A tuple of 3 tuples, each containing 2 positive integers.
 
         ValueError:
-            If the `padx` property is set and the `'align'` property is
+            If the `padx` property is set and the `align` property is
             `center` for the same part of the menu.
 
     Examples:
