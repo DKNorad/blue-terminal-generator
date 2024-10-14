@@ -45,7 +45,10 @@ class Table:
 
         align (tuple, optional):
             How to align the table parts. Defaults to `("left", "left")`.
-
+            Options - left, right, center
+            
+            Overwritten by custom_align.
+            
             Example:
             (a, b) = (headers, table_data)
 
@@ -53,10 +56,13 @@ class Table:
             Custom alignment for each column. Must be a dictionary with the
             column index as the key and the alignment or list of alignments as
             the value.
-
+            Options - left, right, center
+            
+            Overwrites align.
+            
             Example:
             {0: "center", 1: ["center", "left", "right"]}
-            {"col0": "all rows", "col1": ["row0", "row1", "row2"]}
+            {col1: all rows, col2: [row1, row2, row3]}
 
         min_width (int | dict, optional):
             The minimum width for all the columns.
@@ -432,8 +438,16 @@ class Table:
             # Handle dictionary-based tables
             if self._is_dict_table:
                 for col_i, line in enumerate(row.values(), starting_index):
+                    if self.__custom_align and col_i in self.__custom_align:
+                        if isinstance(self.__custom_align[col_i], list):
+                            try:
+                                alignment = self.__custom_align[col_i][row_i]
+                            except IndexError:
+                                alignment = self.__align[1]
+                        else:
+                            alignment = self.__custom_align[col_i]
                     row_data.append(
-                        format_line(line, self.align[1], self.__padx[1], col_i)
+                        format_line(line, alignment, self.__padx[1], col_i)
                     )
 
             # Handle list-based tables
