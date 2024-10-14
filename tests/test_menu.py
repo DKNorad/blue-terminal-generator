@@ -38,7 +38,7 @@ class TestMenu(unittest.TestCase):
         expected = (
             "┌─────────┐\n"
             "│Main Menu│\n"
-            "├─────────┤\n"
+            "├╌╌╌╌╌╌╌╌╌┤\n"
             "│Option 1 │\n"
             "│Option 2 │\n"
             "│Option 3 │\n"
@@ -58,7 +58,7 @@ class TestMenu(unittest.TestCase):
         expected = (
             "┌─────────┐\n"
             "│Main Menu│\n"
-            "├─────────┤\n"
+            "├╌╌╌╌╌╌╌╌╌┤\n"
             "│Option 1 │\n"
             "│Option 2 │\n"
             "│Option 3 │\n"
@@ -161,7 +161,7 @@ class TestMenu(unittest.TestCase):
         expected = (
             "┌───────────────────┐\n"
             "│  Centered Header  │\n"
-            "├───────────────────┤\n"
+            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
             "│Option 1           │\n"
             "├───────────────────┤\n"
             "│  Centered Footer  │\n"
@@ -181,7 +181,7 @@ class TestMenu(unittest.TestCase):
         expected = (
             "┌───────────────────┐\n"
             "│       Right Header│\n"
-            "├───────────────────┤\n"
+            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
             "│Option 1           │\n"
             "├───────────────────┤\n"
             "│       Right Footer│\n"
@@ -242,7 +242,7 @@ class TestMenu(unittest.TestCase):
         expected = (
             "┌───────────────────┐\n"
             "│  Centered Header  │\n"
-            "├───────────────────┤\n"
+            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
             "│  Option 1         │\n"
             "├───────────────────┤\n"
             "│  Centered Footer  │\n"
@@ -285,7 +285,7 @@ class TestMenu(unittest.TestCase):
             "┌────────┐\n"
             "│Line 1  │\n"
             "│Line 2  │\n"
-            "├────────┤\n"
+            "├╌╌╌╌╌╌╌╌┤\n"
             "│Option 1│\n"
             "├────────┤\n"
             "│Footer 1│\n"

@@ -10,7 +10,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│1       │123456  │\n"
             "│300     │4       │\n"
             "└────────┴────────┘"
@@ -24,7 +24,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│       1│  123456│\n"
             "│     300│       4│\n"
             "└────────┴────────┘"
@@ -38,7 +38,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│   1    │ 123456 │\n"
             "│  300   │   4    │\n"
             "└────────┴────────┘"
@@ -52,7 +52,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│       1│  123456│\n"
             "│     300│       4│\n"
             "└────────┴────────┘"
@@ -66,7 +66,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│       1│  123456│\n"
             "│     300│       4│\n"
             "└────────┴────────┘"
@@ -75,15 +75,15 @@ class TestTable(unittest.TestCase):
 
     # Test table with padding and alignment
     def test_table_with_padding_and_alignment(self):
-        data = [["Header 1", "Header 2"], [1, 123456], [300, 4]]
+        data = [["Header 1", "Header 2"], [1, 1234567890], [300, 4]]
         table = Table(data, align=("center", "right"), padx=((0, 0), (0, 2)))
         expected = (
-            "┌────────┬────────┐\n"
-            "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
-            "│     1  │123456  │\n"
-            "│   300  │     4  │\n"
-            "└────────┴────────┘"
+            "┌────────┬────────────┐\n"
+            "│Header 1│  Header 2  │\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
+            "│     1  │1234567890  │\n"
+            "│   300  │         4  │\n"
+            "└────────┴────────────┘"
         )
         self.assertEqual(str(table), expected)
 
@@ -94,7 +94,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│       1│  123456│\n"
             "├────────┼────────┤\n"
             "│     300│       4│\n"
@@ -113,7 +113,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌───────┬───┐\n"
             "│Name   │Age│\n"
-            "├───────┼───┤\n"
+            "├╌╌╌╌╌╌╌┼╌╌╌┤\n"
             "│  Alice│ 30│\n"
             "│    Bob│ 25│\n"
             "│Charlie│ 35│\n"
@@ -128,7 +128,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬───────────────────┐\n"
             "│Header 1│Header 2           │\n"
-            "├────────┼───────────────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
             "│Short   │Very very long text│\n"
             "└────────┴───────────────────┘"
         )
@@ -141,7 +141,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│       1│  123456│\n"
             "│     300│       4│\n"
             "└────────┴────────┘"
@@ -155,7 +155,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│123     │None    │\n"
             "│Text    │456.789 │\n"
             "└────────┴────────┘"
@@ -169,7 +169,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│Cell 1  │Cell 2  │\n"
             "└────────┴────────┘"
         )
@@ -208,7 +208,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────┐\n"
             "│Header 1│Header 2│\n"
-            "├────────┼────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌┤\n"
             "│        │        │\n"
             "└────────┴────────┘"
         )
@@ -226,7 +226,7 @@ class TestTable(unittest.TestCase):
         expected = (
             "┌────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┐\n"
             "│Header 1│Header 2                                                                                            │\n"
-            "├────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤\n"
+            "├╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
             "│Short   │AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA│\n"
             "└────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘"
         )

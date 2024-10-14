@@ -16,10 +16,15 @@ class TestMessage(unittest.TestCase):
         self.assertEqual(message.message, expected)
 
     def test_ascii_style_message(self):
-        message = Message("Hello World", style="ascii")
+        message = Message("Hello World", style="simple")
         expected = "+-----------+\n" "|Hello World|\n" "+-----------+"
         self.assertEqual(message.message, expected)
 
+    def test_bold_style_message(self):
+        message = Message("Hello World", style="bold")
+        expected = "┏━━━━━━━━━━━┓\n" "┃Hello World┃\n" "┗━━━━━━━━━━━┛"
+        self.assertEqual(message.message, expected)
+    
     # Test the __str__ dunder method
     def test_str_method(self):
         message = Message("Hello World", style="single")
@@ -50,7 +55,7 @@ class TestMessage(unittest.TestCase):
 
     # Test right alignment
     def test_message_right_aligned(self):
-        message = Message("Right", align="right", min_width=20, style="ascii")
+        message = Message("Right", align="right", min_width=20, style="simple")
         expected = (
             "+------------------+\n"
             "|             Right|\n"
@@ -61,7 +66,7 @@ class TestMessage(unittest.TestCase):
     # Test right alignment with padding
     def test_message_right_aligned_with_padx(self):
         message = Message(
-            "Right", align="right", min_width=20, padx=3, style="ascii"
+            "Right", align="right", min_width=20, padx=3, style="simple"
         )
         expected = (
             "+------------------+\n"
@@ -72,7 +77,7 @@ class TestMessage(unittest.TestCase):
 
     # Test for multiple lines
     def test_multi_line_message(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
+        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
         expected = (
             "+------+\n" "|Line 1|\n" "|Line 2|\n" "|Line 3|\n" "+------+"
         )
@@ -112,7 +117,7 @@ class TestMessage(unittest.TestCase):
 
     # Test empty message
     def test_empty_message(self):
-        message = Message("", style="ascii")
+        message = Message("", style="simple")
         expected = "++\n" "||\n" "++"
         self.assertEqual(message.message, expected)
 
@@ -124,22 +129,22 @@ class TestMessage(unittest.TestCase):
 
     # Test the get_width method
     def test_get_width(self):
-        message = Message("Test", style="ascii")
+        message = Message("Test", style="simple")
         self.assertEqual(message.get_width(), 6)
 
     # Test the get_width method with multiple lines
     def test_get_width_multi_line(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
+        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
         self.assertEqual(message.get_width(), 8)
 
     # Test the get_height method
     def test_get_height(self):
-        message = Message("Test", style="ascii")
+        message = Message("Test", style="simple")
         self.assertEqual(message.get_height(), 3)
 
     # Test the get_height method with multiple lines
     def test_get_height_multi_line(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="ascii")
+        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
         self.assertEqual(message.get_height(), 5)
 
 

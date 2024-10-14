@@ -373,7 +373,7 @@ class Menu:
             # Prepare the headers bottom border
             item.append(
                 f"{self.__style['ml']}"
-                f"{self.__style['h'] * self._inner_width}"
+                f"{self.__style['hb'] * self._inner_width}"
                 f"{self.__style['mr']}\n"
             )
 
