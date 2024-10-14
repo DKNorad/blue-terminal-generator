@@ -30,7 +30,7 @@ print(menu)
 ```
 ┌───────────┐
 │Main Menu  │
-├───────────┤
+├╌╌╌╌╌╌╌╌╌╌╌┤
 │1) Option 1│
 │2) Option 2│
 │3) Option 3│
@@ -57,7 +57,7 @@ print(table)
 ```
 ┌─────┬───┬─────────────┐
 │name │age│city         │
-├─────┼───┼─────────────┤
+├╌╌╌╌╌┼─╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌┤
 │John │25 │New York     │
 │Jane │30 │San Francisco│
 │Bob  │40 │Los Angeles  │
@@ -82,7 +82,7 @@ print(table)
 ```
 ┌───────┬───────┬───────┐
 │Header1│Header2│Header3│
-├───────┼───────┼───────┤
+├╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌┤
 │Row1_c1│Row1_c2│Row1_c3│
 │Row2_c1│Row2_c2│Row2_c3│
 │Row3_c1│Row3_c2│Row3_c3│
