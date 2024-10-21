@@ -1,5 +1,6 @@
-from .helpers import calculate_table_inner_width, STYLES
-from typing import Union, Tuple
+from typing import Tuple, Union
+
+from .helpers import STYLES, calculate_table_inner_width
 
 
 class Table:
@@ -46,9 +47,9 @@ class Table:
         align (tuple, optional):
             How to align the table parts. Defaults to `("left", "left")`.
             Options - left, right, center
-            
+
             Overwritten by custom_align.
-            
+
             Example:
             (a, b) = (headers, table_data)
 
@@ -57,9 +58,9 @@ class Table:
             column index as the key and the alignment or list of alignments as
             the value.
             Options - left, right, center
-            
+
             Overwrites align.
-            
+
             Example:
             {0: "center", 1: ["center", "left", "right"]}
             {col1: all rows, col2: [row1, row2, row3]}
@@ -81,7 +82,7 @@ class Table:
             Defaults to `((0, 0), (0, 0))`.
             - `((1, 1), (1, 1))` = `((header left, header right), (data left, data right))`
             - `1` = `((1, 1), (1, 1))`
-        
+
         row_sep (bool, optional):
             Add a row separator between each row. Defaults to `False`.
 
@@ -98,7 +99,7 @@ class Table:
             Options:
             "None" - No index column.
             "number" - 1, 2, 3, etc.
-        
+
         ValueError:
             If the `align` is not a tuple of length 2 containing:
             - "left" | "center" | "right"
@@ -115,7 +116,7 @@ class Table:
 
         ValueError:
             If the `padx` is not a tuple or an integer.
-        
+
         ValueError:
             If the `row_sep` is not a boolean.
 
@@ -157,6 +158,7 @@ class Table:
         self.style = style
         self.padx = padx
         self.row_separator = row_sep
+
         self._inner_width = self._calculate_width()
         self._width = 0
         self._height = 0
@@ -169,15 +171,11 @@ class Table:
     @table_data.setter
     def table_data(self, value: list):
         # Check if the value is a list of lists with all string elements
-        if isinstance(value, list) and all(
-            isinstance(row, list) for row in value
-        ):
+        if isinstance(value, list) and all(isinstance(row, list) for row in value):
             self.__table_data = value
 
         # Check if the value is a list of dictionaries with matching keys
-        elif isinstance(value, list) and all(
-            isinstance(row, dict) for row in value
-        ):
+        elif isinstance(value, list) and all(isinstance(row, dict) for row in value):
             # Extract the keys of the first dictionary to check consistency
             first_keys = set(value[0].keys()) if value else set()
 
@@ -198,7 +196,7 @@ class Table:
             )
 
     @property
-    def headers(self) -> list:
+    def headers(self) -> Union[str, list]:
         return self.__headers
 
     @headers.setter
@@ -233,9 +231,7 @@ class Table:
         if isinstance(value, str) and value in valid_types:
             self.__index = value
         else:
-            raise ValueError(
-                f"The 'index' property must be one of {valid_types}."
-            )
+            raise ValueError(f"The 'index' property must be one of {valid_types}.")
 
     @property
     def align(self) -> Tuple:
@@ -264,9 +260,7 @@ class Table:
         if isinstance(value, dict):
             self.__custom_align = value
         else:
-            raise ValueError(
-                "The 'custom_align' property must be a dictionary."
-            )
+            raise ValueError("The 'custom_align' property must be a dictionary.")
 
     @property
     def min_width(self) -> int:
@@ -291,9 +285,7 @@ class Table:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(
-                f"The 'style' property must be one of {valid_styles}."
-            )
+            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
 
     @property
     def padx(self) -> Tuple:
@@ -402,15 +394,11 @@ class Table:
         # Prepare headers if any
         if self.__headers != "None":
             item.append(self.__style["v"])
-            headings = (
-                [" " * self._inner_width[0]] if self.__index != "None" else []
-            )
+            headings = [" " * self._inner_width[0]] if self.__index != "None" else []
             for col_i, line in enumerate(
                 self.__headers, 1 if self.__index != "None" else 0
             ):
-                headings.append(
-                    format_line(line, self.align[0], self.__padx[0], col_i)
-                )
+                headings.append(format_line(line, self.align[0], self.__padx[0], col_i))
             item.append(self.__style["v"].join(headings))
             item.append(f"{self.__style['v']}\n")
 
@@ -421,7 +409,6 @@ class Table:
                 f"{self.__style['mr']}\n"
             )
 
-        
         # Prepare table data rows
         separators = len(self.__table_data) - 1
         for row_i, row in enumerate(self.__table_data, starting_index):
@@ -446,9 +433,7 @@ class Table:
                                 alignment = self.__align[1]
                         else:
                             alignment = self.__custom_align[col_i]
-                    row_data.append(
-                        format_line(line, alignment, self.__padx[1], col_i)
-                    )
+                    row_data.append(format_line(line, alignment, self.__padx[1], col_i))
 
             # Handle list-based tables
             else:
@@ -485,6 +470,7 @@ class Table:
         self._height = len(item.split("\n"))
 
         return item
+
     @property
     def menu(self) -> str:
         return self._table

@@ -1,10 +1,10 @@
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 
 def calculate_inner_width(
     head: list,
-    foot: str = None,
-    opt: list = None,
+    foot: str = "",
+    opt: list = [],
     minimum_width: int = 0,
     padx: Tuple = (0, 0),
 ) -> int:
@@ -52,17 +52,12 @@ def calculate_inner_width(
             len(p) == 2 and all(isinstance(x, int) for x in p) for p in padx
         ):
             (lpad, rpad), (opt_lpad, opt_rpad), (foot_lpad, foot_rpad) = padx
-
+        else:
+            pass
         head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
-        opt = (
-            [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt]
-            if opt
-            else opt
-        )
+        opt = [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt] if opt else opt
         foot = (
-            [f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot]
-            if foot
-            else foot
+            [f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot] if foot else foot
         )
 
     max_str_width = max(
@@ -71,9 +66,7 @@ def calculate_inner_width(
         max(len(o) for o in opt) if opt else 0,
     )
 
-    width = (
-        max_str_width if max_str_width > minimum_width else minimum_width - 2
-    )
+    width = max_str_width if max_str_width > minimum_width else minimum_width - 2
 
     return width
 
@@ -143,9 +136,7 @@ def calculate_table_inner_width(
 
     if headers != "None":
         for col_i, header in enumerate(headers, starting_index):
-            column_widths[col_i] = max(
-                len(header) + sum(header_padx), minimum_width
-            )
+            column_widths[col_i] = max(len(header) + sum(header_padx), minimum_width)
 
     if is_dict_table:
         for row in table_data:
