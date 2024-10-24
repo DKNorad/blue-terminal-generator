@@ -159,7 +159,15 @@ class Table:
         self.padx = padx
         self.row_separator = row_sep
 
-        self._inner_width = self._calculate_width()
+        self._inner_width = calculate_table_inner_width(
+            table_data=self.__table_data,
+            headers=self.__headers,
+            padx=self.__padx,
+            minimum_width=self.__min_width,
+            is_dict_table=self._is_dict_table,
+            indexing=self.__index != "None",
+        )
+
         self._width = 0
         self._height = 0
         self._table = self._generate_table()
@@ -169,7 +177,7 @@ class Table:
         return self.__table_data
 
     @table_data.setter
-    def table_data(self, value: list):
+    def table_data(self, value: Union[list, dict]):
         # Check if the value is a list of lists with all string elements
         if isinstance(value, list) and all(isinstance(row, list) for row in value):
             self.__table_data = value
@@ -263,11 +271,11 @@ class Table:
             raise ValueError("The 'custom_align' property must be a dictionary.")
 
     @property
-    def min_width(self) -> int:
+    def min_width(self) -> Union[int, dict]:
         return self.__min_width
 
     @min_width.setter
-    def min_width(self, value: int):
+    def min_width(self, value: Union[int, dict]):
         if isinstance(value, int) or isinstance(value, dict):
             self.__min_width = value
         else:
@@ -276,7 +284,7 @@ class Table:
             )
 
     @property
-    def style(self) -> str:
+    def style(self) -> dict:
         return self.__style
 
     @style.setter
