@@ -441,6 +441,8 @@ class Table:
                                 alignment = self.__align[1]
                         else:
                             alignment = self.__custom_align[col_i]
+                    else:
+                        alignment = self.__align[1]
                     row_data.append(format_line(line, alignment, self.__padx[1], col_i))
 
             # Handle list-based tables

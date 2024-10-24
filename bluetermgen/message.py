@@ -119,12 +119,10 @@ class Message:
         if isinstance(value, int) and value >= 0:
             self.__min_width = value
         else:
-            raise ValueError(
-                "The 'min_width' property must be a non-negative integer."
-            )
+            raise ValueError("The 'min_width' property must be a non-negative integer.")
 
     @property
-    def style(self) -> str:
+    def style(self) -> dict:
         return self.__style
 
     @style.setter
@@ -133,9 +131,7 @@ class Message:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(
-                f"The 'style' property must be one of {valid_styles}."
-            )
+            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
 
     @property
     def padx(self) -> tuple:
@@ -156,11 +152,7 @@ class Message:
                 "The 'padx' property must be a tuple of length 2 containing positive integers."
             )
 
-        if (
-            self.__align == "center"
-            and self.__padx[0] > 0
-            and self.__padx[1] > 0
-        ):
+        if self.__align == "center" and self.__padx[0] > 0 and self.__padx[1] > 0:
             raise ValueError(
                 "The 'padx' property cannot be used when 'align' is 'center'."
             )
@@ -208,22 +200,16 @@ class Message:
                 formatted_line = f"{line:^{self._inner_width}}"
             elif self.align == "right":
                 # Right align the line with padding
-                padding_left = " " * (
-                    self._inner_width - len(line) - self.__padx[1]
-                )
+                padding_left = " " * (self._inner_width - len(line) - self.__padx[1])
                 padding_right = " " * self.__padx[1]
                 formatted_line = f"{padding_left}{line}{padding_right}"
             else:
                 # Left align the line with padding
                 padding_left = " " * self.__padx[0]
-                padding_right = " " * (
-                    self._inner_width - len(line) - self.__padx[0]
-                )
+                padding_right = " " * (self._inner_width - len(line) - self.__padx[0])
                 formatted_line = f"{padding_left}{line}{padding_right}"
 
-            item.append(
-                f"{self.__style['v']}{formatted_line}{self.__style['v']}\n"
-            )
+            item.append(f"{self.__style['v']}{formatted_line}{self.__style['v']}\n")
 
         # Add the bottom line
         item.append(

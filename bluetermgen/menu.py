@@ -10,13 +10,13 @@ class Menu:
         menu_items (list):
             The menu options.
 
-        header (str, optional):
+        header (str | list | None, optional):
             The menu header. Can be a string or a list of strings for
-            multiple lines. Defaults to `""`.
+            multiple lines. Defaults to `None`.
 
-        footer (str | list, optional):
+        footer (str | list | None, optional):
             The menu footer. Can be a string or a list of strings for
-            multiple lines. Defaults to `""`.
+            multiple lines. Defaults to `None`.
 
         index (str, optional):
             The type of numbering to use. Default to `None`.
@@ -58,10 +58,10 @@ class Menu:
             If the `menu_items` property is not a list.
 
         ValueError:
-            If the `header` property is not a string or a list of strings.
+            If the `header` property is not a string or a list.
 
         ValueError:
-            If the `footer` property is not a string or a list of strings.
+            If the `footer` property is not a string or a list.
 
         ValueError:
             If the `index` property is not a string from the list:
@@ -110,13 +110,13 @@ class Menu:
     def __init__(
         self,
         menu_items: list,
-        header: Union[str, list] = "",
-        footer: Union[str, list] = "",
+        header: Union[str, list, None] = None,
+        footer: Union[str, list, None] = None,
         index: str = "None",
         align: Tuple = ("left", "left", "left"),
         min_width: int = 0,
         style: str = "single",
-        padx: Tuple = ((0, 0), (0, 0), (0, 0)),
+        padx: Union[Tuple, int] = ((0, 0), (0, 0), (0, 0)),
     ) -> None:
         self.menu_items = menu_items
         self.header = header
@@ -140,21 +140,19 @@ class Menu:
         if isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__menu_items = value
         else:
-            raise ValueError(
-                "The 'menu_items' property must be a list of strings."
-            )
+            raise ValueError("The 'menu_items' property must be a list of strings.")
 
     @property
-    def header(self) -> Union[str, list]:
+    def header(self) -> Union[str, list, None]:
         return self.__header
 
     @header.setter
-    def header(self, value: Union[str, list]):
-        if isinstance(value, str):
+    def header(self, value: Union[str, list, None]):
+        if value is None:
+            self.__header = value
+        elif isinstance(value, str):
             self.__header = value.split("\n")
-        elif isinstance(value, list) and all(
-            isinstance(x, str) for x in value
-        ):
+        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__header = value
         else:
             raise ValueError(
@@ -162,21 +160,19 @@ class Menu:
             )
 
     @property
-    def footer(self) -> Union[str, list]:
+    def footer(self) -> Union[str, list, None]:
         return self.__footer
 
     @footer.setter
-    def footer(self, value: Union[str, list]):
-        if isinstance(value, str):
-            self.__footer = value.split("\n")
-        elif isinstance(value, list) and all(
-            isinstance(x, str) for x in value
-        ):
+    def footer(self, value: Union[str, list, None]):
+        if value is None:
             self.__footer = value
+        elif isinstance(value, str):
+            self.__footer = value.split("\n")
+        elif isinstance(value, list):
+            self.__footer = [str(line) for line in value]
         else:
-            raise ValueError(
-                "The 'footer' property must be a string or a list of strings."
-            )
+            raise ValueError("The 'footer' property must be a string or a list.")
 
     @property
     def index(self) -> str:
@@ -196,25 +192,21 @@ class Menu:
         if isinstance(value, str) and value in valid_types:
             self.__index = value
         else:
-            raise ValueError(
-                f"The 'index' property must be one of {valid_types}."
-            )
+            raise ValueError(f"The 'index' property must be one of {valid_types}.")
 
     @property
-    def align(self) -> bool:
+    def align(self) -> Tuple:
         return self.__align
 
     @align.setter
-    def align(self, value: bool):
+    def align(self, value: Tuple):
         valid_alignments = ["left", "center", "right"]
         if isinstance(value, tuple) and all(
             alignment in valid_alignments for alignment in value
         ):
             self.__align = value
         else:
-            raise ValueError(
-                f"The 'align' property must be one of {valid_alignments}."
-            )
+            raise ValueError(f"The 'align' property must be one of {valid_alignments}.")
 
     @property
     def min_width(self) -> int:
@@ -225,12 +217,10 @@ class Menu:
         if isinstance(value, int) and value >= 0:
             self.__min_width = value
         else:
-            raise ValueError(
-                "The 'min_width' property must be a non-negative integer."
-            )
+            raise ValueError("The 'min_width' property must be a non-negative integer.")
 
     @property
-    def style(self) -> str:
+    def style(self) -> dict:
         return self.__style
 
     @style.setter
@@ -239,9 +229,7 @@ class Menu:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(
-                f"The 'style' property must be one of {valid_styles}."
-            )
+            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
 
     @property
     def padx(self) -> tuple:
@@ -298,18 +286,15 @@ class Menu:
     def _calculate_width(self) -> int:
         if self.__index != "None":
             modified_menu_items = [
-                f"{idx + 1}. {line}"
-                for idx, line in enumerate(self.__menu_items)
+                f"{idx + 1}. {line}" for idx, line in enumerate(self.__menu_items)
             ]
+        else:
+            modified_menu_items = self.__menu_items
 
         return calculate_inner_width(
             head=self.__header,
             foot=self.__footer,
-            opt=(
-                self.__menu_items
-                if self.__index == "None"
-                else modified_menu_items
-            ),
+            opt=(modified_menu_items),
             minimum_width=self.__min_width,
             padx=self.__padx,
         )
@@ -366,7 +351,7 @@ class Menu:
         self._width = len(item[0].strip("\n"))
 
         # Prepare the menu headers
-        if self.__header[0]:
+        if self.__header:
             for line in self.__header:
                 item.append(format_line(line, self.__align[0], self.__padx[0]))
 
@@ -384,7 +369,7 @@ class Menu:
             item.append(format_line(line, self.__align[1], self.__padx[1]))
 
         # Prepare the footer data
-        if self.__footer[0]:
+        if self.__footer:
             item.append(
                 f"{self.__style['ml']}"
                 f"{self.__style['h'] * self._inner_width}"
