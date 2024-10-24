@@ -8,11 +8,7 @@ class TestMenu(unittest.TestCase):
     def test_basic_menu(self):
         menu = Menu(menu_items=["Option 1", "Option 2", "Option 3"])
         expected = (
-            "┌────────┐\n"
-            "│Option 1│\n"
-            "│Option 2│\n"
-            "│Option 3│\n"
-            "└────────┘"
+            "┌────────┐\n" "│Option 1│\n" "│Option 2│\n" "│Option 3│\n" "└────────┘"
         )
         self.assertEqual(menu.menu, expected)
 
@@ -20,11 +16,7 @@ class TestMenu(unittest.TestCase):
     def test_str(self):
         menu = Menu(menu_items=["Option 1", "Option 2", "Option 3"])
         expected = (
-            "┌────────┐\n"
-            "│Option 1│\n"
-            "│Option 2│\n"
-            "│Option 3│\n"
-            "└────────┘"
+            "┌────────┐\n" "│Option 1│\n" "│Option 2│\n" "│Option 3│\n" "└────────┘"
         )
         self.assertEqual(str(menu), expected)
 
@@ -74,12 +66,7 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1", "Option 2"],
             index="letter_upper_dot",
         )
-        expected = (
-            "┌───────────┐\n"
-            "│A. Option 1│\n"
-            "│B. Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│A. Option 1│\n" "│B. Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with letter-based numbering (lowercase, dot)
@@ -88,23 +75,13 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1", "Option 2"],
             index="letter_lower_dot",
         )
-        expected = (
-            "┌───────────┐\n"
-            "│a. Option 1│\n"
-            "│b. Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│a. Option 1│\n" "│b. Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with number-based numbering (number, dot)
     def test_menu_number_dot(self):
         menu = Menu(menu_items=["Option 1", "Option 2"], index="number_dot")
-        expected = (
-            "┌───────────┐\n"
-            "│1. Option 1│\n"
-            "│2. Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│1. Option 1│\n" "│2. Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with letter-based numbering (uppercase, parentheses)
@@ -113,12 +90,7 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1", "Option 2"],
             index="letter_upper_parentheses",
         )
-        expected = (
-            "┌───────────┐\n"
-            "│A) Option 1│\n"
-            "│B) Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│A) Option 1│\n" "│B) Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with letter-based numbering (lowercase, parentheses)
@@ -127,12 +99,7 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1", "Option 2"],
             index="letter_lower_parentheses",
         )
-        expected = (
-            "┌───────────┐\n"
-            "│a) Option 1│\n"
-            "│b) Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│a) Option 1│\n" "│b) Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with number-based numbering (number, parentheses)
@@ -141,12 +108,7 @@ class TestMenu(unittest.TestCase):
             menu_items=["Option 1", "Option 2"],
             index="number_parentheses",
         )
-        expected = (
-            "┌───────────┐\n"
-            "│1) Option 1│\n"
-            "│2) Option 2│\n"
-            "└───────────┘"
-        )
+        expected = "┌───────────┐\n" "│1) Option 1│\n" "│2) Option 2│\n" "└───────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test center alignment of header and footer
@@ -198,9 +160,7 @@ class TestMenu(unittest.TestCase):
             padx=((0, 0), (2, 2), (0, 0)),
         )
         expected = (
-            "┌───────────────────┐\n"
-            "│         Option 1  │\n"
-            "└───────────────────┘"
+            "┌───────────────────┐\n" "│         Option 1  │\n" "└───────────────────┘"
         )
         self.assertEqual(menu.menu, expected)
 
@@ -211,11 +171,7 @@ class TestMenu(unittest.TestCase):
             padx=((0, 0), (2, 2), (0, 0)),
             style="single",
         )
-        expected = (
-            "┌─────────────────┐\n"
-            "│  Padded Option  │\n"
-            "└─────────────────┘"
-        )
+        expected = "┌─────────────────┐\n" "│  Padded Option  │\n" "└─────────────────┘"
         self.assertEqual(menu.menu, expected)
 
     # Test menu with minimum width enforced
@@ -332,6 +288,48 @@ class TestMenu(unittest.TestCase):
             header=["Header 1", "Header 2"],
         )
         self.assertEqual(menu.get_height(), 7)
+
+    # Test header with empty string in the list.
+    def test_header_with_empty_string(self):
+        menu = Menu(
+            menu_items=["Option 1"],
+            header=["", "Header 2"],
+        )
+        expected = (
+            "┌────────┐\n"
+            "│        │\n"
+            "│Header 2│\n"
+            "├╌╌╌╌╌╌╌╌┤\n"
+            "│Option 1│\n"
+            "└────────┘"
+        )
+        self.assertEqual(menu.menu, expected)
+
+    # Test footer with empty string in the list.
+    def test_footer_with_empty_string(self):
+        menu = Menu(
+            menu_items=["Option 1"],
+            footer=["Footer 1", ""],
+        )
+        expected = (
+            "┌────────┐\n"
+            "│Option 1│\n"
+            "├────────┤\n"
+            "│Footer 1│\n"
+            "│        │\n"
+            "└────────┘"
+        )
+        self.assertEqual(menu.menu, expected)
+
+    # Test options with empty string in the list.
+    def test_options_with_empty_string(self):
+        menu = Menu(
+            menu_items=["Option 1", ""],
+        )
+        expected = (
+            "┌────────┐\n" "│Option 1│\n" "├────────┤\n" "│        │\n" "└────────┘"
+        )
+        self.assertEqual(menu.menu, expected)
 
 
 if __name__ == "__main__":
