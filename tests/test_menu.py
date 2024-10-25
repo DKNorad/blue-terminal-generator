@@ -326,9 +326,7 @@ class TestMenu(unittest.TestCase):
         menu = Menu(
             menu_items=["Option 1", ""],
         )
-        expected = (
-            "┌────────┐\n" "│Option 1│\n" "├────────┤\n" "│        │\n" "└────────┘"
-        )
+        expected = "┌────────┐\n" "│Option 1│\n" "│        │\n" "└────────┘"
         self.assertEqual(menu.menu, expected)
 
 
