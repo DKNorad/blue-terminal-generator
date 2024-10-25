@@ -276,8 +276,14 @@ class Table:
 
     @min_width.setter
     def min_width(self, value: Union[int, dict]):
-        if isinstance(value, int) or isinstance(value, dict):
+        if isinstance(value, int):
             self.__min_width = value
+        elif isinstance(value, dict):
+            if len(value) < len(self.__table_data[0]):
+                self.__min_width = value
+                for i in range(len(self.__table_data[0])):
+                    if i not in value:
+                        self.__min_width[i] = 0
         else:
             raise ValueError(
                 "The 'min_width' property must be an integer or a dictionary."
@@ -358,17 +364,6 @@ class Table:
         """
         return self._height
 
-    def _calculate_width(self) -> dict:
-        return calculate_table_inner_width(
-            table_data=self.__table_data,
-            headers=self.__headers,
-            padx=self.__padx,
-            minimum_width=self.__min_width,
-            is_dict_table=self._is_dict_table,
-            indexing=self.__index != "None",
-        )
-
-    # TODO: Implement the custom_align feature
     def _generate_table(self) -> str:
         def format_line(
             line: Union[str, int], alignment: str, padx: Tuple, col_index: int
