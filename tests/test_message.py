@@ -2,150 +2,187 @@ import unittest
 from bluetermgen.message import Message
 
 
-class TestMessage(unittest.TestCase):
+class TestMessageStyles(unittest.TestCase):
 
-    # Test for different styles
-    def test_single_style_message(self):
-        message = Message("Hello World", style="single")
-        expected = "┌───────────┐\n" "│Hello World│\n" "└───────────┘"
-        self.assertEqual(message.message, expected)
+    def setUp(self):
+        self.default_message = "Hello World"
+        self.styles = {
+            "single": f"┌───────────┐\n│{self.default_message}│\n└───────────┘",
+            "double": f"╔═══════════╗\n║{self.default_message}║\n╚═══════════╝",
+            "simple": f"+-----------+\n|{self.default_message}|\n+-----------+",
+            "bold": f"┏━━━━━━━━━━━┓\n┃{self.default_message}┃\n┗━━━━━━━━━━━┛",
+        }
 
-    def test_double_style_message(self):
-        message = Message("Hello World", style="double")
-        expected = "╔═══════════╗\n" "║Hello World║\n" "╚═══════════╝"
-        self.assertEqual(message.message, expected)
+    def test_various_styles(self):
+        """[Message] Test that each style renders correctly with the expected border
+        format"""
+        for style, expected_output in self.styles.items():
+            with self.subTest(style=style):
+                message = Message(self.default_message, style=style)
+                self.assertEqual(message.message, expected_output)
 
-    def test_ascii_style_message(self):
-        message = Message("Hello World", style="simple")
-        expected = "+-----------+\n" "|Hello World|\n" "+-----------+"
-        self.assertEqual(message.message, expected)
 
-    def test_bold_style_message(self):
-        message = Message("Hello World", style="bold")
-        expected = "┏━━━━━━━━━━━┓\n" "┃Hello World┃\n" "┗━━━━━━━━━━━┛"
-        self.assertEqual(message.message, expected)
-    
-    # Test the __str__ dunder method
-    def test_str_method(self):
-        message = Message("Hello World", style="single")
-        expected = "┌───────────┐\n" "│Hello World│\n" "└───────────┘"
-        self.assertEqual(str(message), expected)
+class TestMessageAlignment(unittest.TestCase):
 
-    def test_str_method_with_padding(self):
-        message = Message("Padded", padx=3, style="single")
-        expected = "┌────────────┐\n" "│   Padded   │\n" "└────────────┘"
-        self.assertEqual(str(message), expected)
-
-    # Test padding and center alignment
-    def test_message_with_padding(self):
-        message = Message("Padded", padx=3, style="single")
-        expected = "┌────────────┐\n" "│   Padded   │\n" "└────────────┘"
-        self.assertEqual(message.message, expected)
+    def setUp(self):
+        self.default_message = "Hello World"
+        self.min_width = 20
 
     def test_message_centered(self):
+        """[Message] Test center alignment with double border and specified min_width"""
         message = Message(
-            "Center", align="center", min_width=20, style="double"
+            self.default_message,
+            align="center",
+            min_width=self.min_width,
+            style="double",
         )
-        expected = (
-            "╔══════════════════╗\n"
-            "║      Center      ║\n"
-            "╚══════════════════╝"
+        expected_output = (
+            "╔══════════════════╗\n" "║   Hello World    ║\n" "╚══════════════════╝"
         )
-        self.assertEqual(message.message, expected)
+        self.assertEqual(message.message, expected_output)
 
-    # Test right alignment
     def test_message_right_aligned(self):
-        message = Message("Right", align="right", min_width=20, style="simple")
-        expected = (
-            "+------------------+\n"
-            "|             Right|\n"
-            "+------------------+"
-        )
-        self.assertEqual(message.message, expected)
-
-    # Test right alignment with padding
-    def test_message_right_aligned_with_padx(self):
+        """[Message] Test right alignment with simple border and specified min_width"""
         message = Message(
-            "Right", align="right", min_width=20, padx=3, style="simple"
+            "Right", align="right", min_width=self.min_width, style="simple"
         )
-        expected = (
-            "+------------------+\n"
-            "|          Right   |\n"
-            "+------------------+"
+        expected_output = (
+            "+------------------+\n" "|             Right|\n" "+------------------+"
         )
-        self.assertEqual(message.message, expected)
+        self.assertEqual(message.message, expected_output)
 
-    # Test for multiple lines
-    def test_multi_line_message(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
-        expected = (
-            "+------+\n" "|Line 1|\n" "|Line 2|\n" "|Line 3|\n" "+------+"
+    def test_message_right_aligned_with_padx(self):
+        """[Message] Test right alignment with padding and simple border"""
+        message = Message(
+            "Right", align="right", min_width=self.min_width, padx=3, style="simple"
         )
-        self.assertEqual(message.message, expected)
+        expected_output = (
+            "+------------------+\n" "|          Right   |\n" "+------------------+"
+        )
+        self.assertEqual(message.message, expected_output)
 
-    # Test padx with tuple
+
+class TestMessagePadding(unittest.TestCase):
+
+    def setUp(self):
+        self.default_message = "Padded"
+
+    def test_message_with_padding(self):
+        """[Message] Test padding with single border"""
+        message = Message(self.default_message, padx=3, style="single")
+        expected_output = "┌────────────┐\n│   Padded   │\n└────────────┘"
+        self.assertEqual(message.message, expected_output)
+
+    def test_str_method_with_padding(self):
+        """[Message] Test __str__ method with padding and single border"""
+        message = Message(self.default_message, padx=3, style="single")
+        expected_output = "┌────────────┐\n│   Padded   │\n└────────────┘"
+        self.assertEqual(str(message), expected_output)
+
     def test_message_with_different_padx(self):
+        """[Message] Test padding with tuple values for padx in single border"""
         message = Message("Pad Test", padx=(2, 5), style="single")
-        expected = (
-            "┌───────────────┐\n" "│  Pad Test     │\n" "└───────────────┘"
+        expected_output = "┌───────────────┐\n│  Pad Test     │\n└───────────────┘"
+        self.assertEqual(message.message, expected_output)
+
+    def test_padding_with_large_padx(self):
+        """[Message] Test large padx value with single border"""
+        message = Message("Large Padding", padx=10, style="single")
+        expected_output = (
+            "┌─────────────────────────────────┐\n"
+            "│          Large Padding          │\n"
+            "└─────────────────────────────────┘"
         )
-        self.assertEqual(message.message, expected)
+        self.assertEqual(message.message, expected_output)
 
-    # Test minimum width without centering
-    def test_min_width_no_center(self):
-        message = Message("Short", min_width=15, style="double")
-        expected = "╔═════════════╗\n" "║Short        ║\n" "╚═════════════╝"
-        self.assertEqual(message.message, expected)
 
-    # Test invalid inputs
+class TestMessageDimensions(unittest.TestCase):
+
+    def setUp(self):
+        self.default_message = "Test"
+        self.multi_line_message = ["Line 1", "Line 2", "Line 3"]
+
+    def test_get_width(self):
+        """[Message] Test get_width method for single-line message in simple border"""
+        message = Message(self.default_message, style="simple")
+        self.assertEqual(message.get_width(), 6)
+
+    def test_get_width_multi_line(self):
+        """[Message] Test get_width method for multi-line message in simple border"""
+        message = Message(self.multi_line_message, style="simple")
+        self.assertEqual(message.get_width(), 8)
+
+    def test_get_height(self):
+        """[Message] Test get_height method for single-line message in simple border"""
+        message = Message(self.default_message, style="simple")
+        self.assertEqual(message.get_height(), 3)
+
+    def test_get_height_multi_line(self):
+        """[Message] Test get_height method for multi-line message in simple border"""
+        message = Message(self.multi_line_message, style="simple")
+        self.assertEqual(message.get_height(), 5)
+
+
+class TestMessageErrorHandling(unittest.TestCase):
+
+    def setUp(self):
+        self.default_message = "Invalid input"
+
     def test_invalid_style(self):
+        """[Message] Test ValueError raised for invalid style"""
         with self.assertRaises(ValueError):
-            Message("Invalid style", style="nonexistent")
+            Message(self.default_message, style="nonexistent")
 
     def test_invalid_padx(self):
+        """[Message] Test ValueError raised for invalid padx values"""
         with self.assertRaises(ValueError):
-            Message("Invalid padx", padx=(-1, 1))
+            Message(self.default_message, padx=(-1, 1))
 
     def test_invalid_message_type(self):
+        """[Message] Test ValueError raised for non-string, non-list message input"""
         with self.assertRaises(ValueError):
             Message(123)  # Non-string, non-list
 
-    # Test both center and padx raise ValueError
     def test_center_with_padx(self):
+        """[Message] Test ValueError raised for combining center alignment with padx"""
         with self.assertRaises(ValueError):
-            Message("Invalid combo", align="center", padx=(2, 2))
+            Message(self.default_message, align="center", padx=(2, 2))
 
-    # Test empty message
+
+class TestMessageEdgeCases(unittest.TestCase):
+
+    def setUp(self):
+        self.empty_message = ""
+        self.multi_line_message = ["Line 1", "Line 2", "Line 3"]
+
     def test_empty_message(self):
-        message = Message("", style="simple")
-        expected = "++\n" "||\n" "++"
-        self.assertEqual(message.message, expected)
+        """[Message] Test rendering of empty message with simple border"""
+        message = Message(self.empty_message, style="simple")
+        expected_output = "++\n||\n++"
+        self.assertEqual(message.message, expected_output)
 
-    # Test empty list as message
     def test_empty_list_message(self):
+        """[Message] Test rendering of empty list message with single border"""
         message = Message([], style="single")
-        expected = "┌┐\n" "└┘"
-        self.assertEqual(message.message, expected)
+        expected_output = "┌┐\n└┘"
+        self.assertEqual(message.message, expected_output)
 
-    # Test the get_width method
-    def test_get_width(self):
-        message = Message("Test", style="simple")
-        self.assertEqual(message.get_width(), 6)
+    def test_multi_line_message(self):
+        """[Message] Test rendering of multi-line message with simple border"""
+        message = Message(self.multi_line_message, style="simple")
+        expected_output = "+------+\n|Line 1|\n|Line 2|\n|Line 3|\n+------+"
+        self.assertEqual(message.message, expected_output)
 
-    # Test the get_width method with multiple lines
-    def test_get_width_multi_line(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
-        self.assertEqual(message.get_width(), 8)
-
-    # Test the get_height method
-    def test_get_height(self):
-        message = Message("Test", style="simple")
-        self.assertEqual(message.get_height(), 3)
-
-    # Test the get_height method with multiple lines
-    def test_get_height_multi_line(self):
-        message = Message(["Line 1", "Line 2", "Line 3"], style="simple")
-        self.assertEqual(message.get_height(), 5)
+    def test_long_single_line_message(self):
+        """[Message] Test long single-line message handling with simple border"""
+        message_text = "This is a very long single line message"
+        message = Message(message_text, style="simple")
+        expected_output = (
+            "+---------------------------------------+\n"
+            "|This is a very long single line message|\n"
+            "+---------------------------------------+"
+        )
+        self.assertEqual(message.message, expected_output)
 
 
 if __name__ == "__main__":
