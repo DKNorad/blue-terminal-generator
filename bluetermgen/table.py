@@ -1,3 +1,5 @@
+from calendar import c
+from pickletools import read_int4
 from typing import Tuple, Union
 
 from .helpers import STYLES, calculate_table_inner_width
@@ -179,11 +181,15 @@ class Table:
     @table_data.setter
     def table_data(self, value: Union[list, dict]):
         # Check if the value is a list of lists with all string elements
-        if isinstance(value, list) and all(isinstance(row, list) for row in value):
+        if isinstance(value, list) and all(
+            isinstance(row, list) for row in value
+        ):
             self.__table_data = value
 
         # Check if the value is a list of dictionaries with matching keys
-        elif isinstance(value, list) and all(isinstance(row, dict) for row in value):
+        elif isinstance(value, list) and all(
+            isinstance(row, dict) for row in value
+        ):
             # Extract the keys of the first dictionary to check consistency
             first_keys = set(value[0].keys()) if value else set()
 
@@ -214,7 +220,8 @@ class Table:
         elif value == "from_data":
             # If table_data is a list of lists, take the first list as headers
             if all(isinstance(row, list) for row in self.__table_data):
-                self.__headers = self.__table_data.pop(0)
+                self.__headers = self.__table_data[0]
+                self.__table_data = self.__table_data[1:]
 
             # If table_data is a list of dicts, take the keys as headers
             else:
@@ -239,7 +246,9 @@ class Table:
         if isinstance(value, str) and value in valid_types:
             self.__index = value
         else:
-            raise ValueError(f"The 'index' property must be one of {valid_types}.")
+            raise ValueError(
+                f"The 'index' property must be one of {valid_types}."
+            )
 
     @property
     def align(self) -> Tuple:
@@ -268,7 +277,9 @@ class Table:
         if isinstance(value, dict):
             self.__custom_align = value
         else:
-            raise ValueError("The 'custom_align' property must be a dictionary.")
+            raise ValueError(
+                "The 'custom_align' property must be a dictionary."
+            )
 
     @property
     def min_width(self) -> Union[int, dict]:
@@ -299,7 +310,9 @@ class Table:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
+            raise ValueError(
+                f"The 'style' property must be one of {valid_styles}."
+            )
 
     @property
     def padx(self) -> Tuple:
@@ -397,11 +410,15 @@ class Table:
         # Prepare headers if any
         if self.__headers != "None":
             item.append(self.__style["v"])
-            headings = [" " * self._inner_width[0]] if self.__index != "None" else []
+            headings = (
+                [" " * self._inner_width[0]] if self.__index != "None" else []
+            )
             for col_i, line in enumerate(
                 self.__headers, 1 if self.__index != "None" else 0
             ):
-                headings.append(format_line(line, self.align[0], self.__padx[0], col_i))
+                headings.append(
+                    format_line(line, self.align[0], self.__padx[0], col_i)
+                )
             item.append(self.__style["v"].join(headings))
             item.append(f"{self.__style['v']}\n")
 
@@ -427,7 +444,9 @@ class Table:
 
             # Handle dictionary-based tables
             if self._is_dict_table:
-                for col_i, line in enumerate(row.values(), starting_index):
+                for col_i, (line, column_name) in enumerate(
+                    zip(row, self.__headers), starting_index
+                ):
                     if self.__custom_align and col_i in self.__custom_align:
                         if isinstance(self.__custom_align[col_i], list):
                             try:
@@ -438,7 +457,11 @@ class Table:
                             alignment = self.__custom_align[col_i]
                     else:
                         alignment = self.__align[1]
-                    row_data.append(format_line(line, alignment, self.__padx[1], col_i))
+                    row_data.append(
+                        format_line(
+                            row[column_name], alignment, self.__padx[1], col_i
+                        )
+                    )
 
             # Handle list-based tables
             else:
@@ -477,7 +500,7 @@ class Table:
         return item
 
     @property
-    def menu(self) -> str:
+    def table(self) -> str:
         return self._table
 
     def __str__(self) -> str:

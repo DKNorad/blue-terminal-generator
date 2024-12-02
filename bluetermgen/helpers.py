@@ -45,9 +45,17 @@ def calculate_inner_width(
         # If padx is a list of two integers, apply to all parts
         if len(padx) == 2 and all(isinstance(x, int) for x in padx):
             lpad, rpad = padx
-            head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
+            head = (
+                [f"{' ' * lpad}{h}{' ' * rpad}" for h in head]
+                if head
+                else head
+            )
             opt = [f"{' ' * lpad}{o}{' ' * rpad}" for o in opt] if opt else opt
-            foot = [f"{' ' * lpad}{f}{' ' * rpad}" for f in foot] if foot else foot
+            foot = (
+                [f"{' ' * lpad}{f}{' ' * rpad}" for f in foot]
+                if foot
+                else foot
+            )
 
         # If padx has nested tuples with specific
         # paddings for head, opt, and foot
@@ -56,8 +64,16 @@ def calculate_inner_width(
         ):
             (lpad, rpad), (opt_lpad, opt_rpad), (foot_lpad, foot_rpad) = padx
 
-            head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
-            opt = [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt] if opt else opt
+            head = (
+                [f"{' ' * lpad}{h}{' ' * rpad}" for h in head]
+                if head
+                else head
+            )
+            opt = (
+                [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt]
+                if opt
+                else opt
+            )
             foot = (
                 [f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot]
                 if foot
@@ -70,7 +86,9 @@ def calculate_inner_width(
         max(len(o) for o in opt) if opt else 0,
     )
 
-    width = max_str_width if max_str_width > minimum_width else minimum_width - 2
+    width = (
+        max_str_width if max_str_width > minimum_width else minimum_width - 2
+    )
 
     return width
 
@@ -145,21 +163,23 @@ def calculate_table_inner_width(
                 (
                     minimum_width
                     if isinstance(minimum_width, int)
-                    else minimum_width[col_i]
+                    else (minimum_width[col_i - 1 if indexing else col_i])
                 ),
             )
 
     if is_dict_table:
         for row in table_data:
-            for col_i, value in enumerate(row.values(), starting_index):
-                col_width = len(str(value)) + sum(data_padx)
+            for col_i, (_, column_name) in enumerate(
+                zip(row, headers), starting_index
+            ):
+                col_width = len(str(row[column_name])) + sum(data_padx)
                 if col_i not in column_widths:
                     column_widths[col_i] = max(
                         col_width,
                         (
                             minimum_width
                             if isinstance(minimum_width, int)
-                            else minimum_width[col_i]
+                            else (minimum_width[col_i])
                         ),
                     )
                 else:
@@ -169,32 +189,36 @@ def calculate_table_inner_width(
                         (
                             minimum_width
                             if isinstance(minimum_width, int)
-                            else minimum_width[col_i]
+                            else (
+                                minimum_width[col_i - 1 if indexing else col_i]
+                            )
                         ),
                     )
 
     else:
         for row in table_data:
-            for col_index, col_value in enumerate(row, starting_index):
+            for col_i, col_value in enumerate(row, starting_index):
                 col_width = len(str(col_value)) + sum(data_padx)
                 col_width = max(
                     col_width,
                     (
                         minimum_width
                         if isinstance(minimum_width, int)
-                        else minimum_width[col_index]
+                        else (minimum_width[col_i - 1 if indexing else col_i])
                     ),
                 )
-                if col_index not in column_widths:
-                    column_widths[col_index] = col_width
+                if col_i not in column_widths:
+                    column_widths[col_i] = col_width
                 else:
-                    column_widths[col_index] = max(
-                        column_widths[col_index],
+                    column_widths[col_i] = max(
+                        column_widths[col_i],
                         col_width,
                         (
                             minimum_width
                             if isinstance(minimum_width, int)
-                            else minimum_width[col_index]
+                            else (
+                                minimum_width[col_i - 1 if indexing else col_i]
+                            )
                         ),
                     )
 
