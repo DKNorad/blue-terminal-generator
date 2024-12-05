@@ -1,5 +1,3 @@
-from calendar import c
-from pickletools import read_int4
 from typing import Tuple, Union
 
 from .helpers import STYLES, calculate_table_inner_width
@@ -220,8 +218,10 @@ class Table:
         elif value == "from_data":
             # If table_data is a list of lists, take the first list as headers
             if all(isinstance(row, list) for row in self.__table_data):
-                self.__headers = self.__table_data[0]
-                self.__table_data = self.__table_data[1:]
+                try:
+                    self.__headers = self.__table_data.pop(0)
+                except IndexError:
+                    self.__headers = []
 
             # If table_data is a list of dicts, take the keys as headers
             else:
