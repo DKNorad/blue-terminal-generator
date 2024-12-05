@@ -37,12 +37,12 @@ class Table:
                 - Dictionary keys if the data is a list of dictionaries.
             ["header 1", "header 2", "header 3"] - Custom headers.
 
-        index (str, optional):
+        index (bool, optional):
             Add a column with an index for each row.
 
             Options:
-            "None" - No index.
-            "number" - 1, 2, 3, etc.
+            True - No index.
+            False - 1, 2, 3, etc.
 
         align (tuple, optional):
             How to align the table parts. Defaults to `("left", "left")`.
@@ -94,11 +94,11 @@ class Table:
             If the `headers` is not a list or a string.
 
         ValueError:
-            If the `index` is not a string or a valid option.
+            If the `index` is not a boolean.
 
             Options:
-            "None" - No index column.
-            "number" - 1, 2, 3, etc.
+            False - No index column.
+            True - 1, 2, 3, etc.
 
         ValueError:
             If the `align` is not a tuple of length 2 containing:
@@ -129,7 +129,7 @@ class Table:
         ...         ["r2_c1", "r2_c2", "r2_c3"],
         ...         ["r3_c1", "r3_c2", "r3_c3"],
         ...     ],
-        ...     index="number",
+        ...     index=True,
         ...     style="single",
         ...     row_sep=True,
         ... )
@@ -140,7 +140,7 @@ class Table:
         self,
         table_data: Union[list, dict],
         headers: Union[str, list] = "from_data",
-        index: str = "None",
+        index: bool = False,
         align: Tuple = ("left", "left"),
         custom_align: dict = {},
         min_width: Union[int, dict] = 0,
@@ -149,6 +149,7 @@ class Table:
         row_sep: bool = False,
     ) -> None:
         self._is_dict_table = False
+        self._is_custom_headers = False if headers == "from_data" else True
         self.table_data = table_data
         self.headers = headers
         self.index = index
@@ -165,7 +166,7 @@ class Table:
             padx=self.__padx,
             minimum_width=self.__min_width,
             is_dict_table=self._is_dict_table,
-            indexing=self.__index != "None",
+            indexing=self.__index,
         )
 
         self._width = 0
@@ -178,11 +179,26 @@ class Table:
 
     @table_data.setter
     def table_data(self, value: Union[list, dict]):
-        # Check if the value is a list of lists with all string elements
+        # Check if the value is a list of lists.
         if isinstance(value, list) and all(
             isinstance(row, list) for row in value
         ):
-            self.__table_data = value
+
+            # Check if row length is 1 or less and if no headers are specified.
+            if len(value) <= 1 and not self._is_custom_headers:
+                raise ValueError(
+                    "You must provide at least two rows in 'table_data' "
+                    "if no custom 'headers' are provided."
+                )
+
+            # Check if all rows have the same length.
+            elif not all(len(row) == len(value[0]) for row in value):
+                raise ValueError(
+                    "All rows in 'table_data' must have the same length."
+                )
+
+            else:
+                self.__table_data = value
 
         # Check if the value is a list of dictionaries with matching keys
         elif isinstance(value, list) and all(
@@ -203,7 +219,7 @@ class Table:
         else:
             raise ValueError(
                 "The 'table_data' property must be a list of lists "
-                "(with all strings) or a list of dictionaries"
+                "(with matching length) or a list of dictionaries "
                 "(with matching keys)."
             )
 
@@ -213,11 +229,11 @@ class Table:
 
     @headers.setter
     def headers(self, value: Union[str, list]):
-        if value == "None":
+        if value == "None":  # If "None" is passed, no headers are used.
             self.__headers = value
         elif value == "from_data":
             # If table_data is a list of lists, take the first list as headers
-            if all(isinstance(row, list) for row in self.__table_data):
+            if not self._is_dict_table:
                 try:
                     self.__headers = self.__table_data.pop(0)
                 except IndexError:
@@ -234,21 +250,15 @@ class Table:
                 raise ValueError("The 'headers' property must be a list.")
 
     @property
-    def index(self) -> str:
+    def index(self) -> bool:
         return self.__index
 
     @index.setter
-    def index(self, value: str):
-        valid_types = [
-            "None",
-            "number",
-        ]
-        if isinstance(value, str) and value in valid_types:
+    def index(self, value: bool):
+        if isinstance(value, bool):
             self.__index = value
         else:
-            raise ValueError(
-                f"The 'index' property must be one of {valid_types}."
-            )
+            raise ValueError(f"The 'index' property must be a boolean.")
 
     @property
     def align(self) -> Tuple:
@@ -409,7 +419,7 @@ class Table:
                 return f"{' ' * lpadx}{line}{' ' * (self._inner_width[col_index] - len(line) - lpadx)}"
 
         # Set the starting index for the inner_width based on the index attribute
-        starting_index = 1 if self.__index != "None" else 0
+        starting_index = 1 if self.__index else 0
 
         # Prepare the top border
         item = [
@@ -424,11 +434,9 @@ class Table:
         # Prepare headers if any
         if self.__headers != "None":
             item.append(self.__style["v"])
-            headings = (
-                [" " * self._inner_width[0]] if self.__index != "None" else []
-            )
+            headings = [" " * self._inner_width[0]] if self.__index else []
             for col_i, line in enumerate(
-                self.__headers, 1 if self.__index != "None" else 0
+                self.__headers, 1 if self.__index else 0
             ):
                 headings.append(
                     format_line(line, self.align[0], self.__padx[0], col_i)
@@ -452,7 +460,7 @@ class Table:
             # Add index column if needed
             row_data = (
                 [f"{row_i}{' ' * (self._inner_width[0] - len(str(row_i)))}"]
-                if self.__index != "None"
+                if self.__index
                 else []
             )
 
