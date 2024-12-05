@@ -447,6 +447,7 @@ class Table:
                 for col_i, (line, column_name) in enumerate(
                     zip(row, self.__headers), starting_index
                 ):
+                    # Check for custom alignment.
                     if self.__custom_align and col_i in self.__custom_align:
                         if isinstance(self.__custom_align[col_i], list):
                             try:
@@ -457,6 +458,7 @@ class Table:
                             alignment = self.__custom_align[col_i]
                     else:
                         alignment = self.__align[1]
+
                     row_data.append(
                         format_line(
                             row[column_name], alignment, self.__padx[1], col_i
@@ -466,8 +468,21 @@ class Table:
             # Handle list-based tables
             else:
                 for col_i, line in enumerate(row, starting_index):
+
+                    # Check for custom alignment.
+                    if self.__custom_align and col_i in self.__custom_align:
+                        if isinstance(self.__custom_align[col_i], list):
+                            try:
+                                alignment = self.__custom_align[col_i][row_i]
+                            except IndexError:
+                                alignment = self.__align[1]
+                        else:
+                            alignment = self.__custom_align[col_i]
+                    else:
+                        alignment = self.__align[1]
+
                     row_data.append(
-                        format_line(line, self.align[1], self.__padx[1], col_i)
+                        format_line(line, alignment, self.__padx[1], col_i)
                     )
 
             item.append(self.__style["v"].join(row_data))
