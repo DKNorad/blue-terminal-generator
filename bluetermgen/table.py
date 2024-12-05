@@ -290,11 +290,25 @@ class Table:
         if isinstance(value, int):
             self.__min_width = value
         elif isinstance(value, dict):
-            if len(value) < len(self.__table_data[0]):
-                self.__min_width = value
-                for i in range(len(self.__table_data[0])):
-                    if i not in value:
-                        self.__min_width[i] = 0
+            if len(value) > len(self.__table_data[0]):
+                raise ValueError(
+                    "The 'min_width' dictionary has more keys than the number of columns."
+                )
+            for k, v in value.items():
+                if not isinstance(v, int):
+                    raise ValueError(
+                        "The values in the 'min_width' dictionary must be integers."
+                    )
+                if not isinstance(k, int):
+                    raise ValueError(
+                        "The keys in the 'min_width' dictionary must be integers."
+                    )
+
+            self.__min_width = value
+            for i in range(len(self.__table_data[0])):
+                if i not in value:
+                    self.__min_width[i] = 0
+
         else:
             raise ValueError(
                 "The 'min_width' property must be an integer or a dictionary."
