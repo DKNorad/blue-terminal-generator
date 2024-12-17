@@ -30,6 +30,13 @@ class Menu:
             "letter_lower_dot" - a.
             "letter_lower_parentheses" - b)
 
+        custom_index_prefix (list[str] | None, optional):
+            Custom prefixes for menu item numbering. Each prefix corresponds
+            to a menu item. Defaults to `None`.
+
+            Example:
+            ["*", "-", "->"]
+
         align (tuple, optional):
             How to align the menu parts.
             Defaults to `("left", "left", "left")`.
@@ -55,6 +62,9 @@ class Menu:
 
     Raises:
         ValueError:
+            If both `index` and `custom_index_prefix` are provided.
+
+        ValueError:
             If the `menu_items` property is not a list.
 
         ValueError:
@@ -72,6 +82,9 @@ class Menu:
             "letter_upper_parentheses"
             "letter_lower_dot"
             "letter_lower_parentheses"
+
+        ValueError:
+            If the `custom_index_prefix` property is not a list of strings.
 
         ValueError:
             If the `align` property is not a tuple of length 3
@@ -112,16 +125,24 @@ class Menu:
         menu_items: list,
         header: Union[str, list, None] = None,
         footer: Union[str, list, None] = None,
-        index: str = "None",
+        index: Union[str, None] = None,
+        custom_index_prefix: Union[list, None] = None,
         align: Tuple = ("left", "left", "left"),
         min_width: int = 0,
         style: str = "single",
         padx: Union[Tuple, int] = ((0, 0), (0, 0), (0, 0)),
     ) -> None:
+        # Check if both index and custom_index_prefix are provided.
+        if index is not None and custom_index_prefix is not None:
+            raise ValueError(
+                "You cannot provide both 'index' and 'custom_index_prefix'. Please use one or the other."
+            )
+
         self.menu_items = menu_items
         self.header = header
         self.footer = footer
         self.index = index
+        self.custom_index_prefix = custom_index_prefix
         self.align = align
         self.min_width = min_width
         self.style = style
@@ -140,7 +161,9 @@ class Menu:
         if isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__menu_items = value
         else:
-            raise ValueError("The 'menu_items' property must be a list of strings.")
+            raise ValueError(
+                "The 'menu_items' property must be a list of strings."
+            )
 
     @property
     def header(self) -> Union[str, list, None]:
@@ -152,7 +175,9 @@ class Menu:
             self.__header = value
         elif isinstance(value, str):
             self.__header = value.split("\n")
-        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
             self.__header = value
         else:
             raise ValueError(
@@ -172,16 +197,18 @@ class Menu:
         elif isinstance(value, list):
             self.__footer = [str(line) for line in value]
         else:
-            raise ValueError("The 'footer' property must be a string or a list.")
+            raise ValueError(
+                "The 'footer' property must be a string or a list."
+            )
 
     @property
     def index(self) -> str:
         return self.__index
 
     @index.setter
-    def index(self, value: str):
+    def index(self, value: Union[str, None]):
         valid_types = [
-            "None",
+            None,
             "number_dot",
             "number_parentheses",
             "letter_upper_dot",
@@ -189,10 +216,35 @@ class Menu:
             "letter_lower_dot",
             "letter_lower_parentheses",
         ]
-        if isinstance(value, str) and value in valid_types:
+        if value is None:
+            self.__index = value
+        elif isinstance(value, str) and value in valid_types:
             self.__index = value
         else:
-            raise ValueError(f"The 'index' property must be one of {valid_types}.")
+            raise ValueError(
+                f"The 'index' property must be one of {valid_types}."
+            )
+
+    @property
+    def custom_index_prefix(self) -> Union[list, None]:
+        return self.__custom_index_prefix
+
+    @custom_index_prefix.setter
+    def custom_index_prefix(self, value: Union[list, None]):
+        if value is None:
+            self.__custom_index_prefix = value
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
+            if len(value) != len(self.menu_items):
+                raise ValueError(
+                    "The 'custom_index_prefix' list must have the same length as 'menu_items'."
+                )
+            self.__custom_index_prefix = value
+        else:
+            raise ValueError(
+                "The 'custom_index_prefix' must be a list of strings or None."
+            )
 
     @property
     def align(self) -> Tuple:
@@ -206,7 +258,9 @@ class Menu:
         ):
             self.__align = value
         else:
-            raise ValueError(f"The 'align' property must be one of {valid_alignments}.")
+            raise ValueError(
+                f"The 'align' property must be one of {valid_alignments}."
+            )
 
     @property
     def min_width(self) -> int:
@@ -217,7 +271,9 @@ class Menu:
         if isinstance(value, int) and value >= 0:
             self.__min_width = value
         else:
-            raise ValueError("The 'min_width' property must be a non-negative integer.")
+            raise ValueError(
+                "The 'min_width' property must be a non-negative integer."
+            )
 
     @property
     def style(self) -> dict:
@@ -229,7 +285,9 @@ class Menu:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
+            raise ValueError(
+                f"The 'style' property must be one of {valid_styles}."
+            )
 
     @property
     def padx(self) -> tuple:
@@ -265,8 +323,7 @@ class Menu:
         for idx, section in enumerate(["header", "menu items", "footer"]):
             if self.align[idx] == "center" and self.__padx[idx] != (0, 0):
                 raise ValueError(
-                    f"""The 'padx' for the '{section}' cannot be used
-                    when 'align' is "center" for the same."""
+                    f"The 'padx' for the '{section}' cannot be used when 'align' is \"center\" for the same."
                 )
 
     def get_width(self) -> int:
@@ -284,9 +341,15 @@ class Menu:
         return self._height
 
     def _calculate_width(self) -> int:
-        if self.__index != "None":
+        if self.__index is not None:
             modified_menu_items = [
-                f"{idx + 1}. {line}" for idx, line in enumerate(self.__menu_items)
+                f"{idx + 1}. {line}"
+                for idx, line in enumerate(self.__menu_items)
+            ]
+        elif self.__custom_index_prefix is not None:
+            modified_menu_items = [
+                f"{self.__custom_index_prefix[idx]}{line}"
+                for idx, line in enumerate(self.__menu_items)
             ]
         else:
             modified_menu_items = self.__menu_items
@@ -328,16 +391,19 @@ class Menu:
                 )
 
         def add_numbering(line: str, idx: int) -> str:
-            """Helper to add numbering to a line for the menu items."""
-            index_map = {
-                "number_dot": f"{idx + 1}. ",
-                "number_parentheses": f"{idx + 1}) ",
-                "letter_lower_dot": f"{chr(ord('a') + idx)}. ",
-                "letter_upper_dot": f"{chr(ord('A') + idx)}. ",
-                "letter_lower_parentheses": f"{chr(ord('a') + idx)}) ",
-                "letter_upper_parentheses": f"{chr(ord('A') + idx)}) ",
-            }
-            prefix = index_map.get(self.__index, "")
+            """Helper to add numbering or custom prefix to a menu item."""
+            if self.custom_index_prefix:
+                prefix = self.custom_index_prefix[idx]
+            else:
+                index_map = {
+                    "number_dot": f"{idx + 1}. ",
+                    "number_parentheses": f"{idx + 1}) ",
+                    "letter_lower_dot": f"{chr(ord('a') + idx)}. ",
+                    "letter_upper_dot": f"{chr(ord('A') + idx)}. ",
+                    "letter_lower_parentheses": f"{chr(ord('a') + idx)}) ",
+                    "letter_upper_parentheses": f"{chr(ord('A') + idx)}) ",
+                }
+                prefix = index_map.get(self.__index, "")
             return f"{prefix}{line}"
 
         # Prepare the top border
@@ -362,9 +428,9 @@ class Menu:
                 f"{self.__style['mr']}\n"
             )
 
-        # Prepare the menu items with optional numbering
+        # Prepare the menu items with optional numbering or custom prefix
         for idx, line in enumerate(self.__menu_items):
-            if self.__index:
+            if self.__index or self.custom_index_prefix:
                 line = add_numbering(line, idx)
             item.append(format_line(line, self.__align[1], self.__padx[1]))
 
