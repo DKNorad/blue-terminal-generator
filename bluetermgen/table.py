@@ -184,7 +184,10 @@ class Table:
 
             # Check if row length is 1 or less and if no headers are specified.
             if len(value) <= 1 and not self._is_custom_headers:
-                raise ValueError("You must provide at least two rows in 'table_data' " "if no custom 'headers' are provided.")
+                raise ValueError(
+                    "You must provide at least two rows in 'table_data' "
+                    "if no custom 'headers' are provided."
+                )
 
             # Check if all rows have the same length.
             elif not all(len(row) == len(value[0]) for row in value):
@@ -202,7 +205,9 @@ class Table:
                 self.__table_data = value
                 self._is_dict_table = True
             else:
-                raise ValueError("All dictionaries in 'table_data' must have the same keys.")
+                raise ValueError(
+                    "All dictionaries in 'table_data' must have the same keys."
+                )
 
         # Raise an error if neither condition is met
         else:
@@ -255,10 +260,17 @@ class Table:
 
     @align.setter
     def align(self, value: Tuple):
-        if isinstance(value, tuple) and len(value) == 2 and all(x in ["left", "center", "right"] for x in value):
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(x in ["left", "center", "right"] for x in value)
+        ):
             self.__align = value
         else:
-            raise ValueError(f"The 'align' property must be a tuple of length 2 containing" f"'left', 'center', or 'right'.")
+            raise ValueError(
+                f"The 'align' property must be a tuple of length 2 containing"
+                f"'left', 'center', or 'right'."
+            )
 
     @property
     def custom_align(self) -> dict:
@@ -281,12 +293,18 @@ class Table:
             self.__min_width = value
         elif isinstance(value, dict):
             if len(value) > len(self.__table_data[0]):
-                raise ValueError("The 'min_width' dictionary has more keys than the number of columns.")
+                raise ValueError(
+                    "The 'min_width' dictionary has more keys than the number of columns."
+                )
             for k, v in value.items():
                 if not isinstance(v, int):
-                    raise ValueError("The values in the 'min_width' dictionary must be integers.")
+                    raise ValueError(
+                        "The values in the 'min_width' dictionary must be integers."
+                    )
                 if not isinstance(k, int):
-                    raise ValueError("The keys in the 'min_width' dictionary must be integers.")
+                    raise ValueError(
+                        "The keys in the 'min_width' dictionary must be integers."
+                    )
 
             self.__min_width = value
             for i in range(len(self.__table_data[0])):
@@ -294,7 +312,9 @@ class Table:
                     self.__min_width[i] = 0
 
         else:
-            raise ValueError("The 'min_width' property must be an integer or a dictionary.")
+            raise ValueError(
+                "The 'min_width' property must be an integer or a dictionary."
+            )
 
     @property
     def style(self) -> dict:
@@ -318,11 +338,18 @@ class Table:
             """
             Helper function to validate that the tuple structure is correct.
             """
-            return all(isinstance(x, tuple) and len(x) == 2 and all(n >= 0 for n in x) for x in padx_tuple)
+            return all(
+                isinstance(x, tuple) and len(x) == 2 and all(n >= 0 for n in x)
+                for x in padx_tuple
+            )
 
         if isinstance(value, int) and value >= 0:
             self.__padx = ((value, value), (value, value))
-        elif isinstance(value, tuple) and len(value) == 2 and validate_padx_structure(value):
+        elif (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and validate_padx_structure(value)
+        ):
             self.__padx = value
         else:
             raise ValueError(
@@ -334,7 +361,10 @@ class Table:
         # Validate 'center' conflict with padding
         for idx, section in enumerate(["headers", "table_data"]):
             if self.align[idx] == "center" and self.__padx[idx] != (0, 0):
-                raise ValueError(f"The 'padx' for the '{section}' cannot be used " f"when 'align' is 'center' for the same.")
+                raise ValueError(
+                    f"The 'padx' for the '{section}' cannot be used "
+                    f"when 'align' is 'center' for the same."
+                )
 
     @property
     def row_separator(self) -> bool:
@@ -362,7 +392,9 @@ class Table:
         return self._height
 
     def _generate_table(self) -> str:
-        def format_line(line: Union[str, int], alignment: str, padx: Tuple, col_index: int) -> str:
+        def format_line(
+            line: Union[str, int], alignment: str, padx: Tuple, col_index: int
+        ) -> str:
             """Helper to format a line based on alignment and padding."""
             line = str(line)
 
@@ -412,11 +444,17 @@ class Table:
             item.append(self.__style["v"])
 
             # Add index column if needed
-            row_data = [f"{row_i}{' ' * (self._inner_width[0] - len(str(row_i)))}"] if self.__index else []
+            row_data = (
+                [f"{row_i}{' ' * (self._inner_width[0] - len(str(row_i)))}"]
+                if self.__index
+                else []
+            )
 
             # Handle dictionary-based tables
             if self._is_dict_table:
-                for col_i, (line, column_name) in enumerate(zip(row, self.__headers), starting_index):
+                for col_i, (line, column_name) in enumerate(
+                    zip(row, self.__headers), starting_index
+                ):
                     # Check for custom alignment.
                     if self.__custom_align and col_i in self.__custom_align:
                         if isinstance(self.__custom_align[col_i], list):
@@ -429,7 +467,9 @@ class Table:
                     else:
                         alignment = self.__align[1]
 
-                    row_data.append(format_line(row[column_name], alignment, self.__padx[1], col_i))
+                    row_data.append(
+                        format_line(row[column_name], alignment, self.__padx[1], col_i)
+                    )
 
             # Handle list-based tables
             else:

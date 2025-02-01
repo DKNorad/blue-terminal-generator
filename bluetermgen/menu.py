@@ -161,9 +161,7 @@ class Menu:
         if isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__menu_items = value
         else:
-            raise ValueError(
-                "The 'menu_items' property must be a list of strings."
-            )
+            raise ValueError("The 'menu_items' property must be a list of strings.")
 
     @property
     def header(self) -> Union[str, list, None]:
@@ -175,9 +173,7 @@ class Menu:
             self.__header = value
         elif isinstance(value, str):
             self.__header = value.split("\n")
-        elif isinstance(value, list) and all(
-            isinstance(x, str) for x in value
-        ):
+        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
             self.__header = value
         else:
             raise ValueError(
@@ -197,9 +193,7 @@ class Menu:
         elif isinstance(value, list):
             self.__footer = [str(line) for line in value]
         else:
-            raise ValueError(
-                "The 'footer' property must be a string or a list."
-            )
+            raise ValueError("The 'footer' property must be a string or a list.")
 
     @property
     def index(self) -> str:
@@ -221,9 +215,7 @@ class Menu:
         elif isinstance(value, str) and value in valid_types:
             self.__index = value
         else:
-            raise ValueError(
-                f"The 'index' property must be one of {valid_types}."
-            )
+            raise ValueError(f"The 'index' property must be one of {valid_types}.")
 
     @property
     def custom_index_prefix(self) -> Union[list, None]:
@@ -233,9 +225,7 @@ class Menu:
     def custom_index_prefix(self, value: Union[list, None]):
         if value is None:
             self.__custom_index_prefix = value
-        elif isinstance(value, list) and all(
-            isinstance(x, str) for x in value
-        ):
+        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
             if len(value) != len(self.menu_items):
                 raise ValueError(
                     "The 'custom_index_prefix' list must have the same length as 'menu_items'."
@@ -258,9 +248,7 @@ class Menu:
         ):
             self.__align = value
         else:
-            raise ValueError(
-                f"The 'align' property must be one of {valid_alignments}."
-            )
+            raise ValueError(f"The 'align' property must be one of {valid_alignments}.")
 
     @property
     def min_width(self) -> int:
@@ -271,9 +259,7 @@ class Menu:
         if isinstance(value, int) and value >= 0:
             self.__min_width = value
         else:
-            raise ValueError(
-                "The 'min_width' property must be a non-negative integer."
-            )
+            raise ValueError("The 'min_width' property must be a non-negative integer.")
 
     @property
     def style(self) -> dict:
@@ -285,9 +271,7 @@ class Menu:
         if isinstance(value, str) and value in valid_styles:
             self.__style = STYLES[value]
         else:
-            raise ValueError(
-                f"The 'style' property must be one of {valid_styles}."
-            )
+            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
 
     @property
     def padx(self) -> tuple:
@@ -343,8 +327,7 @@ class Menu:
     def _calculate_width(self) -> int:
         if self.__index is not None:
             modified_menu_items = [
-                f"{idx + 1}. {line}"
-                for idx, line in enumerate(self.__menu_items)
+                f"{idx + 1}. {line}" for idx, line in enumerate(self.__menu_items)
             ]
         elif self.__custom_index_prefix is not None:
             modified_menu_items = [
