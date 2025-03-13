@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluetermgen"
+version = "0.1.0"
+description = "Easily create messages, menus and tables in the terminal with borders and styling"
+readme = "README.md"
+authors = [
+    {name = "Nayden Petrov", email = "nedd.petrov@gmail.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Terminals",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+keywords = ["terminal", "cli", "ui", "table", "menu", "message", "box", "border", "styling"]
+requires-python = ">=3.8"
+
+[project.urls]
+"Documentation" = "https://bluetermgen.readthedocs.io"
+"Homepage" = "https://github.com/DKNorad/blue-terminal-generator" 
+"Bug Tracker" = "https://github.com/DKNorad/blue-terminal-generator/issues"
+
+[tool.setuptools]
+packages = ["bluetermgen"]
