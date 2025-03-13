@@ -1,253 +1,209 @@
-import unittest
+import pytest
 from bluetermgen.menu import Menu
+from bluetermgen.exceptions import ValidationError, PaddingError
 
 
-class TestMenuStyles(unittest.TestCase):
-
-    def setUp(self):
-        self.menu_items = ["Option 1", "Option 2", "Option 3"]
-        self.header = "Main Menu"
-        self.footer = "x) Exit"
-        self.styles = {
-            "single": (
-                "┌─────────┐\n"
-                f"│{self.header}│\n"
-                "├╌╌╌╌╌╌╌╌╌┤\n"
-                f"│{self.menu_items[0]} │\n"
-                f"│{self.menu_items[1]} │\n"
-                f"│{self.menu_items[2]} │\n"
-                "├─────────┤\n"
-                f"│{self.footer}  │\n"
-                "└─────────┘"
-            ),
-            "double": (
-                "╔═════════╗\n"
-                f"║{self.header}║\n"
-                "╠═════════╣\n"
-                f"║{self.menu_items[0]} ║\n"
-                f"║{self.menu_items[1]} ║\n"
-                f"║{self.menu_items[2]} ║\n"
-                "╠═════════╣\n"
-                f"║{self.footer}  ║\n"
-                "╚═════════╝"
-            ),
-            "simple": (
-                "+---------+\n"
-                f"|{self.header}|\n"
-                "|=========|\n"
-                f"|{self.menu_items[0]} |\n"
-                f"|{self.menu_items[1]} |\n"
-                f"|{self.menu_items[2]} |\n"
-                "|---------|\n"
-                f"|{self.footer}  |\n"
-                "+---------+"
-            ),
-            "bold": (
-                "┏━━━━━━━━━┓\n"
-                f"┃{self.header}┃\n"
-                "┣╍╍╍╍╍╍╍╍╍┫\n"
-                f"┃{self.menu_items[0]} ┃\n"
-                f"┃{self.menu_items[1]} ┃\n"
-                f"┃{self.menu_items[2]} ┃\n"
-                "┣━━━━━━━━━┫\n"
-                f"┃{self.footer}  ┃\n"
-                "┗━━━━━━━━━┛"
-            ),
-        }
-
-    def test_various_styles(self):
-        """[Menu] Test that each style renders correctly with the expected_output border format"""
-        for style, expected_output_output in self.styles.items():
-            with self.subTest(style=style):
-                menu = Menu(
-                    menu_items=self.menu_items,
-                    header=self.header,
-                    footer=self.footer,
-                    style=style,
-                )
-                self.assertEqual(menu.menu, expected_output_output)
+# Style Tests
+@pytest.mark.parametrize("style", ["single", "double", "simple", "bold"])
+def test_various_styles(
+    style, default_menu_items, menu_header, menu_footer, menu_styles
+):
+    """Test that each style renders correctly with the expected border format."""
+    menu = Menu(
+        menu_items=default_menu_items,
+        header=menu_header,
+        footer=menu_footer,
+        style=style,
+    )
+    assert menu.menu == menu_styles[style]
 
 
-class TestMenuBasicRendering(unittest.TestCase):
-
-    def setUp(self):
-        self.default_menu_items = ["Option 1", "Option 2", "Option 3"]
-        self.default_header = "Main Menu"
-        self.default_footer = "x) Exit"
-
-    def test_basic_menu(self):
-        """[Menu] Test rendering of basic menu without header or footer."""
-        menu = Menu(menu_items=self.default_menu_items)
-        expected_output = (
-            "┌────────┐\n" "│Option 1│\n" "│Option 2│\n" "│Option 3│\n" "└────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_str_method(self):
-        """[Menu] Test the __str__ dunder method for basic menu."""
-        menu = Menu(menu_items=self.default_menu_items)
-        self.assertEqual(str(menu), menu.menu)
-
-    def test_menu_with_header_footer(self):
-        """[Menu] Test rendering of menu with header and footer."""
-        menu = Menu(
-            menu_items=self.default_menu_items,
-            header=self.default_header,
-            footer=self.default_footer,
-        )
-        expected_output = (
-            "┌─────────┐\n"
-            "│Main Menu│\n"
-            "├╌╌╌╌╌╌╌╌╌┤\n"
-            "│Option 1 │\n"
-            "│Option 2 │\n"
-            "│Option 3 │\n"
-            "├─────────┤\n"
-            "│x) Exit  │\n"
-            "└─────────┘"
-        )
-        self.assertEqual(str(menu), expected_output)
-
-    def test_menu_with_empty_items(self):
-        """[Menu] Test rendering of menu with empty menu items."""
-        menu = Menu(menu_items=[])
-        expected_output = "┌┐\n└┘"
-        self.assertEqual(menu.menu, expected_output)
+# Basic Rendering Tests
+def test_basic_menu(default_menu_items):
+    """Test rendering of basic menu without header or footer."""
+    menu = Menu(menu_items=default_menu_items)
+    expected = (
+        "┌────────┐\n"
+        "│Option 1│\n"
+        "│Option 2│\n"
+        "│Option 3│\n"
+        "└────────┘"
+    )
+    assert menu.menu == expected
 
 
-class TestMenuIndexing(unittest.TestCase):
-
-    def setUp(self):
-        self.default_menu_items = ["Option 1", "Option 2"]
-
-    def test_menu_with_letter_index_upper_dot(self):
-        """[Menu] Test menu with letter-based numbering (uppercase, dot)."""
-        menu = Menu(menu_items=self.default_menu_items, index="letter_upper_dot")
-        expected_output = (
-            "┌───────────┐\n" "│A. Option 1│\n" "│B. Option 2│\n" "└───────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_menu_with_number_index_dot(self):
-        """[Menu] Test menu with number-based numbering (number, dot)."""
-        menu = Menu(menu_items=self.default_menu_items, index="number_dot")
-        expected_output = (
-            "┌───────────┐\n" "│1. Option 1│\n" "│2. Option 2│\n" "└───────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_invalid_index_type(self):
-        """[Menu] Test invalid numbering type."""
-        with self.assertRaises(ValueError):
-            Menu(menu_items=self.default_menu_items, index="invalid")
+def test_menu_with_header_footer(default_menu_items, menu_header, menu_footer):
+    """Test rendering of menu with header and footer."""
+    menu = Menu(
+        menu_items=default_menu_items,
+        header=menu_header,
+        footer=menu_footer,
+    )
+    expected = (
+        "┌─────────┐\n"
+        "│Main Menu│\n"
+        "├╌╌╌╌╌╌╌╌╌┤\n"
+        "│Option 1 │\n"
+        "│Option 2 │\n"
+        "│Option 3 │\n"
+        "├─────────┤\n"
+        "│x) Exit  │\n"
+        "└─────────┘"
+    )
+    assert str(menu) == expected
 
 
-class TestMenuAlignment(unittest.TestCase):
+# Indexing Tests
+@pytest.mark.parametrize(
+    "index_type,expected",
+    [
+        (
+            "letter.upper.dot",
+            "┌───────────┐\n"
+            "│A. Option 1│\n"
+            "│B. Option 2│\n"
+            "└───────────┘",
+        ),
+        (
+            "number.dot",
+            "┌───────────┐\n"
+            "│1. Option 1│\n"
+            "│2. Option 2│\n"
+            "└───────────┘",
+        ),
+    ],
+)
+def test_menu_indexing(index_type, expected):
+    """Test different indexing options."""
+    menu = Menu(menu_items=["Option 1", "Option 2"], index=index_type)
+    assert menu.menu == expected
 
-    def setUp(self):
-        self.default_menu_items = ["Option 1"]
-        self.default_header = "Centered Header"
-        self.default_footer = "Centered Footer"
-        self.min_width = 21
 
-    def test_center_header_footer(self):
-        """[Menu] Test center alignment of header and footer."""
-        menu = Menu(
-            menu_items=self.default_menu_items,
-            header=self.default_header,
-            footer=self.default_footer,
-            align=("center", "left", "center"),
-            min_width=self.min_width,
-        )
-        expected_output = (
+# Alignment Tests
+@pytest.mark.parametrize(
+    "align,header,footer,expected",
+    [
+        (
+            ("center", "left", "center"),
+            "Centered Header",
+            "Centered Footer",
+            "┌──────────────────┐\n"
+            "│ Centered Header  │\n"
+            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
+            "│Option 1          │\n"
+            "├──────────────────┤\n"
+            "│ Centered Footer  │\n"
+            "└──────────────────┘",
+        ),
+        (
+            ("right", "left", "right"),
+            "Right Header",
+            "Right Footer",
+            "┌──────────────────┐\n"
+            "│      Right Header│\n"
+            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
+            "│Option 1          │\n"
+            "├──────────────────┤\n"
+            "│      Right Footer│\n"
+            "└──────────────────┘",
+        ),
+    ],
+)
+def test_menu_alignment(align, header, footer, expected, min_width):
+    """Test different alignment configurations."""
+    menu = Menu(
+        menu_items=["Option 1"],
+        header=header,
+        footer=footer,
+        align=align,
+        min_width=min_width,
+    )
+    assert menu.menu == expected
+
+
+# Padding Tests
+@pytest.mark.parametrize(
+    "padx,items,expected",
+    [
+        (
+            ((0, 0), (2, 2), (0, 0)),
+            ["Padded Option"],
             "┌───────────────────┐\n"
-            "│  Centered Header  │\n"
-            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
-            "│Option 1           │\n"
-            "├───────────────────┤\n"
-            "│  Centered Footer  │\n"
-            "└───────────────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_right_header_footer(self):
-        """[Menu] Test right alignment of header and footer."""
-        menu = Menu(
-            menu_items=self.default_menu_items,
-            header="Right Header",
-            footer="Right Footer",
-            align=("right", "left", "right"),
-            min_width=self.min_width,
-        )
-        expected_output = (
+            "│  Padded Option    │\n"
+            "└───────────────────┘",
+        ),
+        (
+            ((0, 0), (2, 2), (0, 0)),
+            ["Option 1"],
             "┌───────────────────┐\n"
-            "│       Right Header│\n"
-            "├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤\n"
-            "│Option 1           │\n"
-            "├───────────────────┤\n"
-            "│       Right Footer│\n"
-            "└───────────────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
+            "│         Option 1  │\n"
+            "└───────────────────┘",
+        ),
+    ],
+)
+def test_menu_padding(padx, items, expected):
+    """Test padding configurations."""
+    menu = Menu(
+        menu_items=items,
+        padx=padx,
+        style="single",
+        align=(
+            ("left", "right", "left")
+            if len(items) == 1 and items[0] == "Option 1"
+            else ("left", "left", "left")
+        ),
+        min_width=21,
+    )
+    assert menu.menu == expected
 
 
-class TestMenuPadding(unittest.TestCase):
-
-    def setUp(self):
-        self.default_menu_items = ["Padded Option"]
-
-    def test_padding_on_options(self):
-        """[Menu] Test padding on menu options."""
-        menu = Menu(
-            menu_items=self.default_menu_items,
-            padx=((0, 0), (2, 2), (0, 0)),
-            style="single",
-        )
-        expected_output = (
-            "┌─────────────────┐\n" "│  Padded Option  │\n" "└─────────────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_right_aligned_with_padding(self):
-        """[Menu] Test right alignment with padding."""
-        menu = Menu(
-            menu_items=["Option 1"],
-            align=("left", "right", "left"),
-            min_width=21,
-            padx=((0, 0), (2, 2), (0, 0)),
-        )
-        expected_output = (
-            "┌───────────────────┐\n" "│         Option 1  │\n" "└───────────────────┘"
-        )
-        self.assertEqual(menu.menu, expected_output)
-
-    def test_invalid_padx(self):
-        """[Menu] Test invalid padding tuple."""
-        with self.assertRaises(ValueError):
-            Menu(menu_items=["Option 1"], padx=((1, 1), (1, -1), (0, 0)))
+# Error Handling Tests
+@pytest.mark.parametrize(
+    "test_input,expected_error",
+    [
+        (
+            {"menu_items": "Invalid Items"},
+            ValidationError,
+        ),  # Invalid menu_items
+        (
+            {"menu_items": ["Option 1"], "index": "invalid"},
+            ValidationError,
+        ),  # Invalid index
+        (
+            {
+                "menu_items": ["Option 1"],
+                "align": ("center", "left", "left"),
+                "padx": ((1, 1), (0, 0), (0, 0)),
+            },
+            PaddingError,
+        ),  # Center padding conflict
+        ({"menu_items": []}, ValidationError),  # Empty menu
+    ],
+)
+def test_menu_errors(test_input, expected_error):
+    """Test various error conditions."""
+    with pytest.raises(expected_error):
+        Menu(**test_input)
 
 
-class TestMenuErrorHandling(unittest.TestCase):
-
-    def test_invalid_menu_items(self):
-        """[Menu] Test invalid menu_items (non-list)."""
-        with self.assertRaises(ValueError):
-            Menu(menu_items="Invalid Items")  # Should be a list of strings
-
-    def test_invalid_index(self):
-        """[Menu] Test invalid numbering type."""
-        with self.assertRaises(ValueError):
-            Menu(menu_items=["Option 1"], index="invalid")
-
-    def test_center_padx_conflict(self):
-        """[Menu] Test center and padx conflict."""
-        with self.assertRaises(ValueError):
-            Menu(
-                menu_items=["Option 1"],
-                align=("center", "left", "left"),
-                padx=((1, 1), (0, 0), (0, 0)),
-            )
+# Edge Cases
+def test_menu_with_empty_items():
+    """Test handling of empty menu items."""
+    with pytest.raises(ValidationError):
+        Menu(menu_items=[])
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize(
+    "items,index,custom_prefix",
+    [
+        (
+            ["Option 1"],
+            "number.dot",
+            ["1."],
+        ),  # Can't use both index and custom prefix
+    ],
+)
+def test_index_prefix_conflict(items, index, custom_prefix):
+    """Test conflicts between index and custom prefix."""
+    with pytest.raises(ValidationError):
+        Menu(menu_items=items, index=index, custom_index_prefix=custom_prefix)

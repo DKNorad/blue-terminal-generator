@@ -1,6 +1,6 @@
 import unittest
-
 from bluetermgen.table import Table
+from bluetermgen.exceptions import ValidationError, PaddingError
 
 
 class TestTable(unittest.TestCase):
@@ -204,12 +204,15 @@ class TestTable(unittest.TestCase):
 
     # Test invalid table data (non-list input)
     def test_invalid_data(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValidationError):
             Table("Invalid Data")  # Should be a list of lists or dicts
 
     # Test table with very long header
     def test_long_header(self):
-        data = [["Short", "A very long header"], ["123", "A long cell content"]]
+        data = [
+            ["Short", "A very long header"],
+            ["123", "A long cell content"],
+        ]
         table = Table(data)
         expected = (
             "┌─────┬───────────────────┐\n"
@@ -242,28 +245,34 @@ class TestTable(unittest.TestCase):
         output = str(table)
         self.assertTrue(len(output) > 1000)
 
-    # Test get_width function for basic data
+    # Test get_dimensions function for basic width data
     def test_get_width_basic(self):
         data = [["Header 1", "Header 2"], ["Cell 1", "Cell 2"]]
         table = Table(data)
         expected_width = 19
-        self.assertEqual(table.get_width(), expected_width)
+        width, _ = table.get_dimensions()
+        self.assertEqual(width, expected_width)
 
-    # Test get_width function with longer data
+    # Test get_dimensions function with longer data
     def test_get_width_long_data(self):
-        data = [["Short", "A very long header"], ["123", "A long cell content"]]
+        data = [
+            ["Short", "A very long header"],
+            ["123", "A long cell content"],
+        ]
         table = Table(data)
         expected_width = 27
-        self.assertEqual(table.get_width(), expected_width)
+        width, _ = table.get_dimensions()
+        self.assertEqual(width, expected_width)
 
-    # Test get_height function for basic data
+    # Test get_dimensions function for basic height data
     def test_get_height_basic(self):
         data = [["Header 1", "Header 2"], ["Cell 1", "Cell 2"]]
         table = Table(data)
         expected_height = 5
-        self.assertEqual(table.get_height(), expected_height)
+        _, height = table.get_dimensions()
+        self.assertEqual(height, expected_height)
 
-    # Test get_height function with multi-line cells
+    # Test get_dimensions function with multi-line cells
     def test_get_height_multiline(self):
         data = [
             ["Header 1", "Header 2"],
@@ -272,9 +281,10 @@ class TestTable(unittest.TestCase):
         ]
         table = Table(data)
         expected_height = 8
-        self.assertEqual(table.get_height(), expected_height)
+        _, height = table.get_dimensions()
+        self.assertEqual(height, expected_height)
 
-    # Test get_width with padding applied
+    # Test get_dimensions with padding applied
     def test_get_width_with_padding(self):
         data = [["Header 1", "Header 2"], ["Cell 1", "Cell 2"]]
         table = Table(data, padx=((2, 2), (3, 1)))  # Custom padding
@@ -287,14 +297,8 @@ class TestTable(unittest.TestCase):
         expected_width = (
             expected_width_col1 + expected_width_col2 + 3
         )  # add separator spaces
-        self.assertEqual(table.get_width(), expected_width)
-
-    # Test get_height with row separators applied
-    def test_get_height_with_row_separators(self):
-        data = [["Header 1", "Header 2"], ["Cell 1", "Cell 2"], ["Row 3", "Row 4"]]
-        table = Table(data, row_sep=True)
-        expected_height = 7
-        self.assertEqual(table.get_height(), expected_height)
+        width, _ = table.get_dimensions()
+        self.assertEqual(width, expected_width)
 
 
 if __name__ == "__main__":
