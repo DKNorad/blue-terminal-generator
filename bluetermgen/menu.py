@@ -1,450 +1,670 @@
-from typing import Union, Tuple
-from .helpers import calculate_inner_width, STYLES
+from typing import Union, List, Optional, Tuple
+from .types import (
+    StyleType,
+    AlignType,
+    MenuPaddingType,
+    MenuAlignType,
+    IndexType,
+    CustomPrefixType,
+    MenuItemsType,
+    StyleEnum,
+    AlignEnum,
+    IndexEnum,
+)
+from .constants import (
+    ERROR_MESSAGES,
+    TL,
+    TR,
+    BL,
+    BR,
+    H,
+    V,
+    ML,
+    MR,
+    HB,
+)
+from .helpers import calculate_inner_width
+from .base import BorderedElement
+from .exceptions import ValidationError, PaddingError
 
 
-class Menu:
+class Menu(BorderedElement):
     """
-    Generates a menu with borders with different options.
+    Generates a menu with borders and styling options.
 
     Args:
-        menu_items (list):
-            The menu options.
+        menu_items (MenuItemsType):
+            List of strings representing menu options.
+            Each item must be a non-empty string.
 
-        header (str | list | None, optional):
-            The menu header. Can be a string or a list of strings for
-            multiple lines. Defaults to `None`.
+        header (Union[str, List[str], None], optional):
+            Menu header text. Can be:
+            - A string (split on newlines)
+            - A list of strings (multi-line)
+            - None (no header)
+            Defaults to None.
 
-        footer (str | list | None, optional):
-            The menu footer. Can be a string or a list of strings for
-            multiple lines. Defaults to `None`.
+        footer (Union[str, List[str], None], optional):
+            Menu footer text. Same format as header.
+            Defaults to None.
 
-        index (str, optional):
-            The type of numbering to use. Default to `None`.
+        index (IndexType, optional):
+            Numbering style for menu items. Options:
+            - number.dot ("1.")
+            - number.parentheses ("1)")
+            - letter.upper.dot ("A.")
+            - letter.upper.parentheses ("A)")
+            - letter.lower.dot ("a.")
+            - letter.lower.parentheses ("a)")
+            - None (no numbering)
+            Defaults to None.
 
-            Options:
-            "None" - No numbering.
-            "number_dot" - 1.
-            "number_parentheses" - 1)
-            "letter_upper_dot" - A.
-            "letter_upper_parentheses" - A)
-            "letter_lower_dot" - a.
-            "letter_lower_parentheses" - b)
+        custom_index_prefix (CustomPrefixType, optional):
+            List of custom prefixes for menu items.
+            Must match number of menu items.
+            Cannot be used with index.
+            Defaults to None.
 
-        custom_index_prefix (list[str] | None, optional):
-            Custom prefixes for menu item numbering. Each prefix corresponds
-            to a menu item. Defaults to `None`.
-
-            Example:
-            ["*", "-", "->"]
-
-        align (tuple, optional):
-            How to align the menu parts.
-            Defaults to `("left", "left", "left")`.
-
-            Example:
-            (a, b, c) = (header, options, footer)
+        align (MenuAlignType, optional):
+            Tuple of alignments (header, items, footer).
+            Each can be: "left", "center", "right"
+            Defaults to ("left", "left", "left").
 
         min_width (int, optional):
-            The minimum width of the menu. Defaults to `0`.
+            Minimum width of menu in characters.
+            Must be non-negative.
+            Defaults to 0.
 
-        style (str, optional):
-            If the `style` property is not a string or a valid option.
-            Defaults to `single`.
+        style (StyleType, optional):
+            Border style to use.
+            Options: "single", "double", "bold", "simple"
+            Defaults to "single".
 
-        padx (tuple | int, optional):
-            Padding to add around the menu parts.
-            Defaults to `((0, 0), (0, 0), (0, 0))`.
-
-            Example:
-            (1, 1) = (left, right)
-            ((1, 1), (1, 1), (1, 1)) = ((header), (footer), (options))
-            1 = (1, 1)
+        padx (MenuPaddingType, optional):
+            Horizontal padding configuration:
+            - Integer for uniform padding
+            - Tuple of 3 (left, right) tuples for sections
+            Defaults to ((0, 0), (0, 0), (0, 0)).
 
     Raises:
-        ValueError:
-            If both `index` and `custom_index_prefix` are provided.
+        ValidationError:
+            - Invalid menu items
+            - Invalid header/footer format
+            - Invalid index type
+            - Invalid custom prefix
+            - Invalid alignment
+            - Invalid minimum width
+            - Index and custom prefix conflict
 
-        ValueError:
-            If the `menu_items` property is not a list.
+        PaddingError:
+            - Invalid padding format
+            - Padding conflicts with center alignment
 
-        ValueError:
-            If the `header` property is not a string or a list.
-
-        ValueError:
-            If the `footer` property is not a string or a list.
-
-        ValueError:
-            If the `index` property is not a string from the list:
-            "None"
-            "number_dot"
-            "number_parentheses"
-            "letter_upper_dot"
-            "letter_upper_parentheses"
-            "letter_lower_dot"
-            "letter_lower_parentheses"
-
-        ValueError:
-            If the `custom_index_prefix` property is not a list of strings.
-
-        ValueError:
-            If the `align` property is not a tuple of length 3
-            and any element is not part of the list:
-            "left"
-            "center"
-            "right"
-
-        ValueError:
-            If the `min_width` property is not an integer.
-
-        ValueError:
-            If the `style` property is not a string or one of the valid styles.
-
-        ValueError:
-            If the `padx` is not:
-            - A single positive integer.
-            - A tuple of 3 tuples, each containing 2 positive integers.
-
-        ValueError:
-            If the `padx` property is set and the `align` property is
-            `center` for the same part of the menu.
-
-    Examples:
+    Example:
         >>> menu = Menu(
-        ...     menu_items=["Option 1", "Option 2", "Option 3", "Option 4"],
+        ...     menu_items=["New Game", "Load Game", "Settings", "Exit"],
         ...     header="Main Menu",
-        ...     footer="x) Exit.",
-        ...     align=("center", "left", "left"),
+        ...     footer="Use arrow keys to navigate",
+        ...     index=IndexEnum.NUMBER_DOT.value,
+        ...     align=("center", "left", "right"),
         ...     min_width=30,
-        ...     index="letter_lower_parentheses",
-        ...     padx=((0, 0), (1, 0), (1, 0))
+        ...     style="double",
+        ...     padx=((0, 0), (2, 1), (1, 1))
         ... )
+        >>> print(menu)
     """
 
     def __init__(
         self,
-        menu_items: list,
-        header: Union[str, list, None] = None,
-        footer: Union[str, list, None] = None,
-        index: Union[str, None] = None,
-        custom_index_prefix: Union[list, None] = None,
-        align: Tuple = ("left", "left", "left"),
+        menu_items: MenuItemsType,
+        header: Union[str, List[str], None] = None,
+        footer: Union[str, List[str], None] = None,
+        index: IndexType = None,
+        custom_index_prefix: CustomPrefixType = None,
+        align: MenuAlignType = (
+            AlignEnum.LEFT.value,
+            AlignEnum.LEFT.value,
+            AlignEnum.LEFT.value,
+        ),
         min_width: int = 0,
-        style: str = "single",
-        padx: Union[Tuple, int] = ((0, 0), (0, 0), (0, 0)),
+        style: StyleType = StyleEnum.SINGLE.value,
+        padx: MenuPaddingType = ((0, 0), (0, 0), (0, 0)),
     ) -> None:
-        # Check if both index and custom_index_prefix are provided.
-        if index is not None and custom_index_prefix is not None:
-            raise ValueError(
-                "You cannot provide both 'index' and 'custom_index_prefix'. Please use one or the other."
+        """Initialize a menu with the specified configuration."""
+        # Initialize parent class
+        super().__init__(style=style)
+
+        # Validate index and custom prefix conflict
+        if index and custom_index_prefix:
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["PREFIX_INDEX_CONFLICT"].format(
+                    prefix=custom_index_prefix, index=index
+                )
             )
 
+        # Set and validate properties
         self.menu_items = menu_items
-        self.header = header
-        self.footer = footer
+        self.header = self._process_text(header) if header else None
+        self.footer = self._process_text(footer) if footer else None
         self.index = index
         self.custom_index_prefix = custom_index_prefix
         self.align = align
         self.min_width = min_width
-        self.style = style
         self.padx = padx
+
+        # Calculate dimensions and generate content
         self._inner_width = self._calculate_width()
-        self._width = 0
-        self._height = 0
-        self._menu = self._generate_menu()
+        self._content = self._generate_menu()
+
+    def _process_text(self, text: Union[str, List[str]]) -> List[str]:
+        """
+        Process text input into a list of strings.
+
+        Args:
+            text: String or list of strings to process.
+
+        Returns:
+            List of strings, with any string input split on newlines.
+
+        Raises:
+            ValidationError: If text format is invalid.
+        """
+        try:
+            if isinstance(text, str):
+                return text.split("\n")
+            elif isinstance(text, list) and all(
+                isinstance(x, str) for x in text
+            ):
+                return text
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_TEXT"].format(
+                    value=f"{type(text).__name__}"
+                )
+            )
+        except Exception as e:
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_TEXT"].format(value=str(e))
+            ) from e
+
+    def _calculate_width(self) -> int:
+        """
+        Calculate the inner width of the menu.
+
+        Returns:
+            The calculated inner width considering all content and padding.
+        """
+        modified_items = []
+
+        if self.index is not None:
+            modified_items = [
+                self._add_numbering(line, idx)
+                for idx, line in enumerate(self.menu_items)
+            ]
+        elif self.custom_index_prefix is not None:
+            if len(self.custom_index_prefix) != len(self.menu_items):
+                raise ValidationError(
+                    ERROR_MESSAGES["MENU"]["INVALID_PREFIX"].format(
+                        value=f"expected {len(self.menu_items)} prefixes, got {len(self.custom_index_prefix)}"
+                    )
+                )
+            modified_items = [
+                f"{prefix} {line}"
+                for prefix, line in zip(
+                    self.custom_index_prefix, self.menu_items
+                )
+            ]
+        else:
+            modified_items = self.menu_items.copy()
+
+        return calculate_inner_width(
+            head=self.header,
+            foot=self.footer,
+            opt=modified_items,
+            minimum_width=self.min_width,
+            padx=self.padx,
+        )
+
+    def _add_numbering(self, text: str, index: int) -> str:
+        """
+        Add numbering or custom prefix to a menu item.
+
+        Args:
+            text: The menu item text.
+            index: The index of the item in the menu.
+
+        Returns:
+            Formatted string with appropriate prefix.
+
+        Notes:
+            CLI menu numbering:
+            - Single digit (1-9): Quick access for most common options
+            - Two digits (01-99): Standard menu items
+            - Three digits (100+): Extended menu items
+
+            When using letter-based indexing:
+            - Single letter (a-z): First 26 items
+            - Two digits (01-99): Next 99 items
+            - Three digits (100+): Extended items
+        """
+        if self.custom_index_prefix:
+            try:
+                return f"{self.custom_index_prefix[index]} {text}"
+            except IndexError:
+                return text
+
+        # Handle number-based indexing
+        if self.index in [
+            IndexEnum.NUMBER_DOT.value,
+            IndexEnum.NUMBER_PARENTHESES.value,
+        ]:
+            if index < 9:
+                # Single digit for quick access (1-9)
+                prefix = str(index + 1)
+            elif index < 99:
+                # Two digits for standard items (01-99)
+                prefix = f"{index + 1:02d}"
+            else:
+                # Three digits for extended items (100+)
+                prefix = f"{index + 1:03d}"
+
+            suffix = "." if self.index == IndexEnum.NUMBER_DOT.value else ")"
+            return f"{prefix}{suffix} {text}"
+
+        # Handle letter-based indexing
+        elif self.index in [
+            IndexEnum.LETTER_UPPER_DOT.value,
+            IndexEnum.LETTER_UPPER_PARENTHESES.value,
+            IndexEnum.LETTER_LOWER_DOT.value,
+            IndexEnum.LETTER_LOWER_PARENTHESES.value,
+        ]:
+            is_upper = self.index in [
+                IndexEnum.LETTER_UPPER_DOT.value,
+                IndexEnum.LETTER_UPPER_PARENTHESES.value,
+            ]
+            is_dot = self.index in [
+                IndexEnum.LETTER_UPPER_DOT.value,
+                IndexEnum.LETTER_LOWER_DOT.value,
+            ]
+
+            if index < 26:
+                # Single letter for first 26 items
+                prefix = chr(65 + index if is_upper else 97 + index)
+            elif index < 99:
+                # Two digits for next 99 items (01-99)
+                prefix = f"{index - 25:02d}"
+            else:
+                # Three digits for extended items (100+)
+                prefix = f"{index - 25:03d}"
+
+            suffix = "." if is_dot else ")"
+            return f"{prefix}{suffix} {text}"
+
+        return text
+
+    def _format_line(
+        self, text: str, align: AlignType, padding: Tuple[int, int]
+    ) -> str:
+        """
+        Format a line of text with alignment and padding.
+
+        Args:
+            text: Text to format.
+            align: Alignment to use.
+            padding: (left, right) padding values.
+
+        Returns:
+            Formatted line with borders, alignment, and padding.
+        """
+        lpad, rpad = padding
+
+        if align == AlignEnum.CENTER.value:
+            formatted = f"{text:^{self._inner_width}}"
+        elif align == AlignEnum.RIGHT.value:
+            padding_left = " " * (self._inner_width - len(text) - rpad)
+            padding_right = " " * rpad
+            formatted = f"{padding_left}{text}{padding_right}"
+        else:  # LEFT alignment
+            padding_left = " " * lpad
+            padding_right = " " * (self._inner_width - len(text) - lpad)
+            formatted = f"{padding_left}{text}{padding_right}"
+
+        return f"{self.style[V]}{formatted}{self.style[V]}\n"
 
     @property
-    def menu_items(self) -> list:
-        return self.__menu_items
+    def menu_items(self) -> MenuItemsType:
+        """Get the list of menu items."""
+        return self._menu_items
 
     @menu_items.setter
-    def menu_items(self, value: Union[str, list]):
-        if isinstance(value, list) and all(isinstance(x, str) for x in value):
-            self.__menu_items = value
-        else:
-            raise ValueError("The 'menu_items' property must be a list of strings.")
+    def menu_items(self, value: MenuItemsType) -> None:
+        """
+        Set and validate menu items.
+
+        Args:
+            value: List of strings for menu items.
+
+        Raises:
+            ValidationError: If value is not a list of non-empty strings.
+        """
+        if not isinstance(value, list):
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_OPTIONS"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
+
+        if not value:
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["EMPTY_MENU"].format(value="empty list")
+            )
+
+        if not all(isinstance(x, str) for x in value):
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_OPTIONS"].format(
+                    value="list contains non-string items"
+                )
+            )
+
+        self._menu_items = value
 
     @property
-    def header(self) -> Union[str, list, None]:
-        return self.__header
+    def header(self) -> Optional[List[str]]:
+        """Get the menu header text."""
+        return self._header
 
     @header.setter
-    def header(self, value: Union[str, list, None]):
+    def header(self, value: Optional[Union[str, List[str]]]) -> None:
+        """
+        Set and validate the menu header.
+
+        Args:
+            value: String, list of strings, or None for the header.
+
+        Raises:
+            ValidationError: If value format is invalid.
+        """
         if value is None:
-            self.__header = value
-        elif isinstance(value, str):
-            self.__header = value.split("\n")
-        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
-            self.__header = value
+            self._header = None
+            return
+
+        if isinstance(value, str):
+            self._header = value.split("\n")
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
+            self._header = value
         else:
-            raise ValueError(
-                "The 'header' property must be a string or a list of strings."
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_HEADER"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
     @property
-    def footer(self) -> Union[str, list, None]:
-        return self.__footer
+    def footer(self) -> Optional[List[str]]:
+        """Get the menu footer text."""
+        return self._footer
 
     @footer.setter
-    def footer(self, value: Union[str, list, None]):
+    def footer(self, value: Optional[Union[str, List[str]]]) -> None:
+        """
+        Set and validate the menu footer.
+
+        Args:
+            value: String, list of strings, or None for the footer.
+
+        Raises:
+            ValidationError: If value format is invalid.
+        """
         if value is None:
-            self.__footer = value
-        elif isinstance(value, str):
-            self.__footer = value.split("\n")
-        elif isinstance(value, list):
-            self.__footer = [str(line) for line in value]
+            self._footer = None
+            return
+
+        if isinstance(value, str):
+            self._footer = value.split("\n")
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
+            self._footer = value
         else:
-            raise ValueError("The 'footer' property must be a string or a list.")
-
-    @property
-    def index(self) -> str:
-        return self.__index
-
-    @index.setter
-    def index(self, value: Union[str, None]):
-        valid_types = [
-            None,
-            "number_dot",
-            "number_parentheses",
-            "letter_upper_dot",
-            "letter_upper_parentheses",
-            "letter_lower_dot",
-            "letter_lower_parentheses",
-        ]
-        if value is None:
-            self.__index = value
-        elif isinstance(value, str) and value in valid_types:
-            self.__index = value
-        else:
-            raise ValueError(f"The 'index' property must be one of {valid_types}.")
-
-    @property
-    def custom_index_prefix(self) -> Union[list, None]:
-        return self.__custom_index_prefix
-
-    @custom_index_prefix.setter
-    def custom_index_prefix(self, value: Union[list, None]):
-        if value is None:
-            self.__custom_index_prefix = value
-        elif isinstance(value, list) and all(isinstance(x, str) for x in value):
-            if len(value) != len(self.menu_items):
-                raise ValueError(
-                    "The 'custom_index_prefix' list must have the same length as 'menu_items'."
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_FOOTER"].format(
+                    value=f"{type(value).__name__}"
                 )
-            self.__custom_index_prefix = value
-        else:
-            raise ValueError(
-                "The 'custom_index_prefix' must be a list of strings or None."
             )
 
     @property
-    def align(self) -> Tuple:
-        return self.__align
+    def index(self) -> IndexType:
+        """Get the current index type."""
+        return self._index
+
+    @index.setter
+    def index(self, value: IndexType) -> None:
+        """
+        Set and validate the index type.
+
+        Args:
+            value: Index type from IndexEnum or None.
+
+        Raises:
+            ValidationError: If value is invalid.
+        """
+        if value is not None and value not in IndexEnum.list():
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_INDEX"].format(value=value)
+            )
+        self._index = value
+
+    @property
+    def custom_index_prefix(self) -> CustomPrefixType:
+        """Get the custom index prefixes."""
+        return self._custom_index_prefix
+
+    @custom_index_prefix.setter
+    def custom_index_prefix(self, value: CustomPrefixType) -> None:
+        """
+        Set and validate custom index prefixes.
+
+        Args:
+            value: List of prefix strings or None.
+
+        Raises:
+            ValidationError: If value format is invalid.
+        """
+        if value is not None:
+            if not isinstance(value, list):
+                raise ValidationError(
+                    ERROR_MESSAGES["MENU"]["INVALID_PREFIX"].format(
+                        value=f"{type(value).__name__}"
+                    )
+                )
+            if not all(isinstance(x, str) for x in value):
+                raise ValidationError(
+                    ERROR_MESSAGES["MENU"]["INVALID_PREFIX"].format(
+                        value="list contains non-string items"
+                    )
+                )
+        self._custom_index_prefix = value
+
+    @property
+    def align(self) -> MenuAlignType:
+        """Get the alignment configuration."""
+        return self._align
 
     @align.setter
-    def align(self, value: Tuple):
-        valid_alignments = ["left", "center", "right"]
-        if isinstance(value, tuple) and all(
-            alignment in valid_alignments for alignment in value
-        ):
-            self.__align = value
-        else:
-            raise ValueError(f"The 'align' property must be one of {valid_alignments}.")
+    def align(self, value: MenuAlignType) -> None:
+        """
+        Set and validate the alignment configuration.
+
+        Args:
+            value: Tuple of three alignment values.
+
+        Raises:
+            ValidationError: If alignment format or values are invalid.
+        """
+        if not isinstance(value, tuple) or len(value) != 3:
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_ALIGN"].format(
+                    value=f"{type(value).__name__} of length {len(value) if isinstance(value, tuple) else 'N/A'}"
+                )
+            )
+
+        valid_alignments = [e.value for e in AlignEnum]
+        if not all(a in valid_alignments for a in value):
+            raise ValidationError(
+                ERROR_MESSAGES["MENU"]["INVALID_ALIGN"].format(
+                    value=f"contains invalid alignment(s): {value}"
+                )
+            )
+        self._align = value
 
     @property
     def min_width(self) -> int:
-        return self.__min_width
+        """Get the minimum width setting."""
+        return self._min_width
 
     @min_width.setter
-    def min_width(self, value: int):
-        if isinstance(value, int) and value >= 0:
-            self.__min_width = value
-        else:
-            raise ValueError("The 'min_width' property must be a non-negative integer.")
+    def min_width(self, value: int) -> None:
+        """
+        Set and validate the minimum width.
 
-    @property
-    def style(self) -> dict:
-        return self.__style
+        Args:
+            value: Minimum width value.
 
-    @style.setter
-    def style(self, value: str):
-        valid_styles = list(STYLES.keys())
-        if isinstance(value, str) and value in valid_styles:
-            self.__style = STYLES[value]
-        else:
-            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
-
-    @property
-    def padx(self) -> tuple:
-        return self.__padx
-
-    @padx.setter
-    def padx(self, value: Union[Tuple, int]):
-        def validate_padx_structure(padx_tuple):
-            """
-            Helper function to validate that the tuple structure is correct.
-            """
-            return all(
-                isinstance(x, tuple) and len(x) == 2 and all(n >= 0 for n in x)
-                for x in padx_tuple
+        Raises:
+            ValidationError: If width is invalid.
+        """
+        if not isinstance(value, int):
+            raise ValidationError(
+                ERROR_MESSAGES["COMMON"]["INVALID_TYPE"].format(
+                    expected_type="integer", value=f"{type(value).__name__}"
+                )
             )
 
-        if isinstance(value, int) and value >= 0:
-            self.__padx = ((value, value), (value, value), (value, value))
+        if value < 0:
+            raise ValidationError(
+                ERROR_MESSAGES["COMMON"]["INVALID_MIN_WIDTH"].format(
+                    value=value
+                )
+            )
+
+        self._min_width = value
+
+    @property
+    def padx(self) -> MenuPaddingType:
+        """Get the padding configuration."""
+        return self._padx
+
+    @padx.setter
+    def padx(self, value: MenuPaddingType) -> None:
+        """
+        Set and validate the padding configuration.
+
+        Args:
+            value: Integer or tuple of three (left, right) padding tuples.
+
+        Raises:
+            PaddingError: If padding is invalid or conflicts with alignment.
+        """
+        if isinstance(value, int):
+            if value < 0:
+                raise PaddingError(
+                    ERROR_MESSAGES["MENU"]["INVALID_PADDING"].format(
+                        value=value
+                    )
+                )
+            self._padx = ((value, value), (value, value), (value, value))
         elif (
             isinstance(value, tuple)
             and len(value) == 3
-            and validate_padx_structure(value)
+            and all(
+                isinstance(x, tuple)
+                and len(x) == 2
+                and all(isinstance(n, int) and n >= 0 for n in x)
+                for x in value
+            )
         ):
-            self.__padx = value
+            self._padx = value
         else:
-            raise ValueError(
-                "The 'padx' property must be either:\n"
-                "- A single positive integer.\n"
-                "- A tuple of 3 tuples, each containing 2 positive integers."
+            raise PaddingError(
+                ERROR_MESSAGES["MENU"]["INVALID_PADDING"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
-        # Validate 'center' conflict with padding
-        for idx, section in enumerate(["header", "menu items", "footer"]):
-            if self.align[idx] == "center" and self.__padx[idx] != (0, 0):
-                raise ValueError(
-                    f"The 'padx' for the '{section}' cannot be used when 'align' is \"center\" for the same."
+        # Check for center alignment conflicts
+        sections = ["header", "items", "footer"]
+        for idx, section in enumerate(sections):
+            if self.align[idx] == AlignEnum.CENTER.value and self._padx[
+                idx
+            ] != (0, 0):
+                raise PaddingError(
+                    ERROR_MESSAGES["MENU"]["CENTER_PADDING_CONFLICT"].format(
+                        section=section, value=self._padx[idx]
+                    )
                 )
-
-    def get_width(self) -> int:
-        """
-        Returns:
-            int: The entire width of the menu including the borders.
-        """
-        return self._width
-
-    def get_height(self) -> int:
-        """
-        Returns:
-            int: The entire height of the menu including the borders.
-        """
-        return self._height
-
-    def _calculate_width(self) -> int:
-        if self.__index is not None:
-            modified_menu_items = [
-                f"{idx + 1}. {line}" for idx, line in enumerate(self.__menu_items)
-            ]
-        elif self.__custom_index_prefix is not None:
-            modified_menu_items = [
-                f"{self.__custom_index_prefix[idx]}{line}"
-                for idx, line in enumerate(self.__menu_items)
-            ]
-        else:
-            modified_menu_items = self.__menu_items
-
-        return calculate_inner_width(
-            head=self.__header,
-            foot=self.__footer,
-            opt=(modified_menu_items),
-            minimum_width=self.__min_width,
-            padx=self.__padx,
-        )
 
     def _generate_menu(self) -> str:
-        def format_line(line: str, alignment: str, padx: tuple) -> str:
-            """Helper to format a line based on alignment."""
-            if alignment == "center":
-                return (
-                    f"{self.__style['v']}"
-                    f"{line:^{self._inner_width}}"
-                    f"{self.__style['v']}\n"
-                )
-            elif alignment == "right":
-                lpadx, rpadx = padx
-                return (
-                    f"{self.__style['v']}"
-                    f"{' ' * (self._inner_width - len(line) - rpadx)}"
-                    f"{line}"
-                    f"{' ' * rpadx}"
-                    f"{self.__style['v']}\n"
-                )
-            else:
-                lpadx, _ = padx
-                return (
-                    f"{self.__style['v']}"
-                    f"{' ' * lpadx}"
-                    f"{line}"
-                    f"{' ' * (self._inner_width - len(line) - lpadx)}"
-                    f"{self.__style['v']}\n"
-                )
+        """
+        Generate the complete formatted menu.
 
-        def add_numbering(line: str, idx: int) -> str:
-            """Helper to add numbering or custom prefix to a menu item."""
-            if self.custom_index_prefix:
-                prefix = self.custom_index_prefix[idx]
-            else:
-                index_map = {
-                    "number_dot": f"{idx + 1}. ",
-                    "number_parentheses": f"{idx + 1}) ",
-                    "letter_lower_dot": f"{chr(ord('a') + idx)}. ",
-                    "letter_upper_dot": f"{chr(ord('A') + idx)}. ",
-                    "letter_lower_parentheses": f"{chr(ord('a') + idx)}) ",
-                    "letter_upper_parentheses": f"{chr(ord('A') + idx)}) ",
-                }
-                prefix = index_map.get(self.__index, "")
-            return f"{prefix}{line}"
-
-        # Prepare the top border
-        item = [
-            f"{self.__style['tl']}"
-            f"{self.__style['h'] * self._inner_width}"
-            f"{self.__style['tr']}\n"
+        Returns:
+            Formatted menu string with borders, content, and styling.
+        """
+        # Initialize with top border
+        lines = [
+            f"{self.style[TL]}{self.style[H] * self._inner_width}{self.style[TR]}\n"
         ]
 
-        # Get the width of the menu
-        self._width = len(item[0].strip("\n"))
+        # Store total width
+        self._width = len(lines[0].strip("\n"))
 
-        # Prepare the menu headers
-        if self.__header:
-            for line in self.__header:
-                item.append(format_line(line, self.__align[0], self.__padx[0]))
-
-            # Prepare the headers bottom border
-            item.append(
-                f"{self.__style['ml']}"
-                f"{self.__style['hb'] * self._inner_width}"
-                f"{self.__style['mr']}\n"
+        # Add header if present
+        if self.header:
+            for line in self.header:
+                lines.append(
+                    self._format_line(line, self.align[0], self.padx[0])
+                )
+            # Add header separator
+            lines.append(
+                f"{self.style[ML]}{self.style[HB] * self._inner_width}{self.style[MR]}\n"
             )
 
-        # Prepare the menu items with optional numbering or custom prefix
-        for idx, line in enumerate(self.__menu_items):
-            if self.__index or self.custom_index_prefix:
-                line = add_numbering(line, idx)
-            item.append(format_line(line, self.__align[1], self.__padx[1]))
+        # Add menu items
+        for idx, line in enumerate(self.menu_items):
+            if self.index or self.custom_index_prefix:
+                line = self._add_numbering(line, idx)
+            lines.append(self._format_line(line, self.align[1], self.padx[1]))
 
-        # Prepare the footer data
-        if self.__footer:
-            item.append(
-                f"{self.__style['ml']}"
-                f"{self.__style['h'] * self._inner_width}"
-                f"{self.__style['mr']}\n"
+        # Add footer if present
+        if self.footer:
+            # Add footer separator
+            lines.append(
+                f"{self.style[ML]}{self.style[H] * self._inner_width}{self.style[MR]}\n"
             )
-            for line in self.__footer:
-                item.append(format_line(line, self.__align[2], self.__padx[2]))
+            # Add footer content
+            for line in self.footer:
+                lines.append(
+                    self._format_line(line, self.align[2], self.padx[2])
+                )
 
-        # Add the bottom line
-        item.append(
-            f"{self.__style['bl']}"
-            f"{self.__style['h'] * self._inner_width}"
-            f"{self.__style['br']}"
+        # Add bottom border
+        lines.append(
+            f"{self.style[BL]}{self.style[H] * self._inner_width}{self.style[BR]}"
         )
 
-        # Get the height of the menu
-        self._height = len(item)
-
-        return "".join(item)
+        # Store height and return joined content
+        self._height = len(lines)
+        return "".join(lines)
 
     @property
     def menu(self) -> str:
-        return self._menu
+        """Get the complete formatted menu."""
+        return self._content
 
     def __str__(self) -> str:
-        return self._menu
+        """Get string representation of the menu."""
+        return self._content
 
 
 if __name__ == "__main__":

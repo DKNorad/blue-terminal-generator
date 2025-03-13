@@ -1,12 +1,20 @@
-from typing import Tuple, Union
+from typing import Union, Dict, List, Tuple
+from .types import (
+    SinglePaddingType,
+    MenuPaddingType,
+    TablePaddingType,
+    TableHeaderType,
+    TableMinWidthType,
+    TableDataType,
+)
 
 
 def calculate_inner_width(
-    head: Union[list, None],
-    foot: Union[list, None] = None,
-    opt: list = [],
+    head: Union[List[str], None],
+    foot: Union[List[str], None] = None,
+    opt: List[str] = [],
     minimum_width: int = 0,
-    padx: Tuple = (0, 0),
+    padx: Union[SinglePaddingType, MenuPaddingType] = (0, 0),
 ) -> int:
     """
     Help function to calculate the width of the item based on the longest
@@ -41,28 +49,23 @@ def calculate_inner_width(
         int: The width of the item.
     """
 
+    def apply_padding(text: List[str], padding: Tuple[int, int]) -> List[str]:
+        """Apply padding to a list of text lines."""
+        lpad, rpad = padding
+        return [f"{' ' * lpad}{line}{' ' * rpad}" for line in text]
+
     if padx:
-        # If padx is a list of two integers, apply to all parts
         if len(padx) == 2 and all(isinstance(x, int) for x in padx):
-            lpad, rpad = padx
-            head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
-            opt = [f"{' ' * lpad}{o}{' ' * rpad}" for o in opt] if opt else opt
-            foot = [f"{' ' * lpad}{f}{' ' * rpad}" for f in foot] if foot else foot
+            # Message padding
+            head = apply_padding(head, padx) if head else head
+            opt = apply_padding(opt, padx) if opt else opt
+            foot = apply_padding(foot, padx) if foot else foot
 
-        # If padx has nested tuples with specific
-        # paddings for head, opt, and foot
-        elif len(padx) == 3 and all(
-            len(p) == 2 and all(isinstance(x, int) for x in p) for p in padx
-        ):
-            (lpad, rpad), (opt_lpad, opt_rpad), (foot_lpad, foot_rpad) = padx
-
-            head = [f"{' ' * lpad}{h}{' ' * rpad}" for h in head] if head else head
-            opt = [f"{' ' * opt_lpad}{o}{' ' * opt_rpad}" for o in opt] if opt else opt
-            foot = (
-                [f"{' ' * foot_lpad}{f}{' ' * foot_rpad}" for f in foot]
-                if foot
-                else foot
-            )
+        elif len(padx) == 3:
+            # Menu padding
+            head = apply_padding(head, padx[0]) if head else head
+            opt = apply_padding(opt, padx[1]) if opt else opt
+            foot = apply_padding(foot, padx[2]) if foot else foot
 
     max_str_width = max(
         max(len(h) for h in head) if head else 0,
@@ -70,19 +73,19 @@ def calculate_inner_width(
         max(len(o) for o in opt) if opt else 0,
     )
 
-    width = max_str_width if max_str_width > minimum_width else minimum_width - 2
-
-    return width
+    return (
+        max_str_width if max_str_width > minimum_width else minimum_width - 2
+    )
 
 
 def calculate_table_inner_width(
-    table_data: list,
-    headers: Union[list, str],
-    padx: tuple,
-    minimum_width: Union[int, dict],
+    table_data: TableDataType,
+    headers: TableHeaderType,
+    padx: TablePaddingType,
+    minimum_width: TableMinWidthType,
     is_dict_table: bool,
     indexing: bool,
-) -> dict:
+) -> Dict[int, int]:
     """
     Calculates the width for each column in the `table_data`,
     optionally applying padding.
@@ -128,11 +131,10 @@ def calculate_table_inner_width(
             {col1: width, col2: width, ...}
     """
 
-    column_widths = {}
+    column_widths: Dict[int, int] = {}
     header_padx, data_padx = padx
     starting_index = 0
 
-    # Calculate the number of rows to get the index width if set.
     if indexing:
         index_width = len(str(len(table_data)))
         column_widths[0] = index_width
@@ -145,13 +147,15 @@ def calculate_table_inner_width(
                 (
                     minimum_width
                     if isinstance(minimum_width, int)
-                    else (minimum_width[col_i - 1 if indexing else col_i])
+                    else minimum_width[col_i - 1 if indexing else col_i]
                 ),
             )
 
     if is_dict_table:
         for row in table_data:
-            for col_i, (_, column_name) in enumerate(zip(row, headers), starting_index):
+            for col_i, (_, column_name) in enumerate(
+                zip(row, headers), starting_index
+            ):
                 col_width = len(str(row[column_name])) + sum(data_padx)
                 if col_i not in column_widths:
                     column_widths[col_i] = max(
@@ -169,114 +173,40 @@ def calculate_table_inner_width(
                         (
                             minimum_width
                             if isinstance(minimum_width, int)
-                            else (minimum_width[col_i - 1 if indexing else col_i])
+                            else (
+                                minimum_width[col_i - 1 if indexing else col_i]
+                            )
                         ),
                     )
 
     else:
+
+        def calculate_column_width(
+            col_value: str,
+            col_i: int,
+            data_padx: Tuple[int, int],
+            minimum_width: TableMinWidthType,
+            indexing: bool,
+        ) -> int:
+            """Calculate the width of a single column."""
+            col_width = len(str(col_value)) + sum(data_padx)
+            return max(
+                col_width,
+                (
+                    minimum_width
+                    if isinstance(minimum_width, int)
+                    else (minimum_width[col_i - 1 if indexing else col_i])
+                ),
+            )
+
         for row in table_data:
             for col_i, col_value in enumerate(row, starting_index):
-                col_width = len(str(col_value)) + sum(data_padx)
-                col_width = max(
-                    col_width,
-                    (
-                        minimum_width
-                        if isinstance(minimum_width, int)
-                        else (minimum_width[col_i - 1 if indexing else col_i])
-                    ),
+                col_width = calculate_column_width(
+                    col_value, col_i, data_padx, minimum_width, indexing
                 )
                 if col_i not in column_widths:
                     column_widths[col_i] = col_width
                 else:
-                    column_widths[col_i] = max(
-                        column_widths[col_i],
-                        col_width,
-                        (
-                            minimum_width
-                            if isinstance(minimum_width, int)
-                            else (minimum_width[col_i - 1 if indexing else col_i])
-                        ),
-                    )
+                    column_widths[col_i] = max(column_widths[col_i], col_width)
 
     return column_widths
-
-
-""" Styles legend:
-tl - top left
-tr - top right
-bl - bottom left
-br - bottom right
-h - horizontal
-v - vertical
-c - cross
-ml - middle left
-mr - middle right
-mt - middle top
-mb - middle bottom
-hb - header bottom
-"""
-
-BOLD_STYLE = {
-    "tl": "┏",
-    "tr": "┓",
-    "bl": "┗",
-    "br": "┛",
-    "h": "━",
-    "v": "┃",
-    "c": "╋",
-    "ml": "┣",
-    "mr": "┫",
-    "mt": "┳",
-    "mb": "┻",
-    "hb": "╍",
-}
-
-DOUBLE_STYLE = {
-    "tl": "╔",
-    "tr": "╗",
-    "bl": "╚",
-    "br": "╝",
-    "h": "═",
-    "v": "║",
-    "c": "╬",
-    "ml": "╠",
-    "mr": "╣",
-    "mt": "╦",
-    "mb": "╩",
-    "hb": "═",
-}
-SINGLE_STYLE = {
-    "tl": "┌",
-    "tr": "┐",
-    "bl": "└",
-    "br": "┘",
-    "h": "─",
-    "v": "│",
-    "c": "┼",
-    "ml": "├",
-    "mr": "┤",
-    "mt": "┬",
-    "mb": "┴",
-    "hb": "╌",
-}
-ASCII_STYLE = {
-    "tl": "+",
-    "tr": "+",
-    "bl": "+",
-    "br": "+",
-    "h": "-",
-    "v": "|",
-    "c": "+",
-    "ml": "|",
-    "mr": "|",
-    "mt": "+",
-    "mb": "+",
-    "hb": "=",
-}
-
-STYLES = {
-    "double": DOUBLE_STYLE,
-    "single": SINGLE_STYLE,
-    "simple": ASCII_STYLE,
-    "bold": BOLD_STYLE,
-}

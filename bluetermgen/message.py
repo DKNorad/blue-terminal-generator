@@ -1,234 +1,285 @@
-from .helpers import calculate_inner_width, STYLES
-from typing import Union, List, Tuple
+from typing import List
+from .types import (
+    StyleType,
+    AlignType,
+    MessagePaddingType,
+    StyleEnum,
+    AlignEnum,
+    MessageTextType,
+)
+from .constants import ERROR_MESSAGES, TL, TR, BL, BR, H, V
+from .base import BorderedElement
+from .exceptions import ValidationError, PaddingError
+from .helpers import calculate_inner_width
 
 
-class Message:
+class Message(BorderedElement):
     """
-    Generates a message with borders with different options.
+    Generates a message with borders and styling options.
 
     Args:
-        message (str | list):
-            The text for the message. Can be a string or a list of strings
-            for multiple lines.
+        message_text (MessageTextType):
+            The text for the message. Can be either:
+            - A string (will be split on newlines)
+            - A list of strings (each string is a line)
 
-        align (str, optional):
-            How to align the text. Defaults to `left`.
+        align (AlignType, optional):
+            Text alignment. Defaults to AlignEnum.LEFT.value
+            Valid options: left, center, right
 
         min_width (int, optional):
-            The minimum width of the frame. Defaults to `0`.
+            Minimum width of the frame. Defaults to 0
+            Must be a non-negative integer
 
-        style (str, optional):
-            The frame style to use. Defaults to `single`.
+        style (StyleType, optional):
+            Border style to use. Defaults to StyleEnum.SINGLE.value
+            Valid options: single, double, bold, simple
 
-        padx (tuple | int, optional):
-            Padding to add around the text. Defaults to `(0, 0)`.
-
-            Example:
-            (1, 1) = (left, right)
-            1 = (1, 1)
+        padx (MessagePaddingType, optional):
+            Horizontal padding around text. Defaults to (0, 0)
+            Can be either:
+            - A positive integer for uniform padding
+            - A tuple (left_pad, right_pad) for custom padding
 
     Raises:
-        ValueError:
-            If the `message` property is not a string or a list of strings.
+        ValidationError: For invalid text, width, or alignment
+        PaddingError: For invalid padding or padding/alignment conflicts
 
-        ValueError:
-            If the `align` property is not a string from the list:
-            "left"
-            "center"
-            "right"
+    Examples:
+        >>> # Single line message
+        >>> msg1 = Message("Hello World!", align="center")
 
-        ValueError:
-            If the `min_width` property is not an integer.
+        >>> # Multi-line message with custom style
+        >>> msg2 = Message(
+        ...     ["Header", "Content", "Footer"],
+        ...     style="double",
+        ...     min_width=20
+        ... )
 
-        ValueError:
-            If the `style` property is not a string or a valid option.
-            Defaults to `single`.
-
-        ValueError:
-            If the `padx` property is not a tuple of length 2
-            containing integers.
-
-        ValueError:
-            If the `padx` property is not an integer.
-
-        ValueError:
-            If the `padx` property is set
-            while the `align` property is `center`.
-
-    Example:
-        >>> message = Message(["", "Hello World!", ""],
-        ...                    style="double", align="center", min_width=20)
+        >>> # Message with padding
+        >>> msg3 = Message(
+        ...     "Padded text",
+        ...     padx=(2, 1),
+        ...     style="bold"
+        ... )
     """
 
     def __init__(
         self,
-        message_text: Union[str, List],
-        align: str = "left",
+        message_text: MessageTextType,
+        align: AlignType = AlignEnum.LEFT.value,
         min_width: int = 0,
-        style: str = "single",
-        padx: Union[Tuple, int] = (0, 0),
+        style: StyleType = StyleEnum.SINGLE.value,
+        padx: MessagePaddingType = (0, 0),
     ) -> None:
+        """Initialize a message with the specified configuration."""
+        super().__init__(style=style, align=align)
 
+        # Set properties with validation
         self.message_text = message_text
-        self.align = align
         self.min_width = min_width
-        self.style = style
         self.padx = padx
+
+        # Calculate dimensions and generate content
         self._inner_width = self._calculate_width()
-        self._width = 0
-        self._height = 0
-        self._message = self._generate_message()
+        self._content = self._generate_message()
 
     @property
-    def message_text(self) -> Union[str, List]:
+    def message_text(self) -> List[str]:
+        """Get the current message text as a list of strings."""
         return self._message_text
 
     @message_text.setter
-    def message_text(self, value: Union[str, List]):
+    def message_text(self, value: MessageTextType) -> None:
+        """
+        Set and validate the message text.
+
+        Args:
+            value: String or list of strings for the message.
+
+        Raises:
+            ValidationError: If text is invalid or empty.
+        """
+        # First validate the type
+        if not isinstance(value, (str, list)):
+            raise ValidationError(
+                ERROR_MESSAGES["MESSAGE"]["INVALID_TEXT"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
+
+        # Convert string to list of strings
         if isinstance(value, str):
-            self._message_text = value.split("\n")
-        elif isinstance(value, list):
-            self._message_text = value
+            text_lines = value.split("\n")
         else:
-            raise ValueError(
-                """
-                The 'message_text' property must be a string
-                or a list of strings.
-                """
+            # Validate all items in list are strings
+            if not all(isinstance(x, str) for x in value):
+                raise ValidationError(
+                    ERROR_MESSAGES["MESSAGE"]["INVALID_TEXT"].format(
+                        value="list with non-string items"
+                    )
+                )
+            text_lines = value
+
+        # Check for empty message
+        if not any(line.strip() for line in text_lines):
+            raise ValidationError(
+                ERROR_MESSAGES["MESSAGE"]["EMPTY_MESSAGE"].format(
+                    value="empty text"
+                )
             )
 
-    @property
-    def align(self) -> str:
-        return self.__align
-
-    @align.setter
-    def align(self, value: str):
-        if isinstance(value, str) and value in ["left", "center", "right"]:
-            self.__align = value
-        else:
-            raise ValueError(
-                "The 'align' property must be 'left', 'center', or 'right'"
-            )
+        self._message_text = text_lines
 
     @property
     def min_width(self) -> int:
-        return self.__min_width
+        """Get the minimum width setting."""
+        return self._min_width
 
     @min_width.setter
-    def min_width(self, value: int):
-        if isinstance(value, int) and value >= 0:
-            self.__min_width = value
-        else:
-            raise ValueError("The 'min_width' property must be a non-negative integer.")
+    def min_width(self, value: int) -> None:
+        """
+        Set and validate the minimum width.
+
+        Args:
+            value: Minimum width value.
+
+        Raises:
+            ValidationError: If width is invalid.
+        """
+        if not isinstance(value, int):
+            raise ValidationError(
+                ERROR_MESSAGES["COMMON"]["INVALID_TYPE"].format(
+                    expected_type="integer", value=f"{type(value).__name__}"
+                )
+            )
+
+        if value < 0:
+            raise ValidationError(
+                ERROR_MESSAGES["COMMON"]["INVALID_MIN_WIDTH"].format(
+                    value=value
+                )
+            )
+
+        self._min_width = value
 
     @property
-    def style(self) -> dict:
-        return self.__style
-
-    @style.setter
-    def style(self, value: str):
-        valid_styles = list(STYLES.keys())
-        if isinstance(value, str) and value in valid_styles:
-            self.__style = STYLES[value]
-        else:
-            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
-
-    @property
-    def padx(self) -> tuple:
-        return self.__padx
+    def padx(self) -> MessagePaddingType:
+        """Get the current padding configuration."""
+        return self._padx
 
     @padx.setter
-    def padx(self, value: Union[Tuple, int]):
-        if isinstance(value, int) and value >= 0:
-            self.__padx = (value, value)
-        elif (
-            isinstance(value, tuple)
-            and len(value) == 2
-            and all(isinstance(x, int) and x >= 0 for x in value)
-        ):
-            self.__padx = value
+    def padx(self, value: MessagePaddingType) -> None:
+        """
+        Set and validate the padding configuration.
+
+        Args:
+            value: Padding value(s).
+
+        Raises:
+            PaddingError: If padding is invalid or conflicts with alignment.
+        """
+        # Handle single integer case
+        if isinstance(value, int):
+            if value < 0:
+                raise PaddingError(
+                    ERROR_MESSAGES["MESSAGE"]["INVALID_PADDING"].format(
+                        value=value
+                    )
+                )
+            self._padx = (value, value)
+
+        # Handle tuple case
+        elif isinstance(value, tuple):
+            if (
+                len(value) != 2
+                or not all(isinstance(x, int) for x in value)
+                or not all(x >= 0 for x in value)
+            ):
+                raise PaddingError(
+                    ERROR_MESSAGES["MESSAGE"]["INVALID_PADDING"].format(
+                        value=value
+                    )
+                )
+            self._padx = value
+
         else:
-            raise ValueError(
-                "The 'padx' property must be a tuple of length 2 containing positive integers."
+            raise PaddingError(
+                ERROR_MESSAGES["MESSAGE"]["INVALID_PADDING"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
-        if self.__align == "center" and self.__padx[0] > 0 and self.__padx[1] > 0:
-            raise ValueError(
-                "The 'padx' property cannot be used when 'align' is 'center'."
+        # Check for center alignment conflict
+        if self.align == AlignEnum.CENTER.value and any(
+            x > 0 for x in self._padx
+        ):
+            raise PaddingError(
+                ERROR_MESSAGES["MESSAGE"]["CENTER_PADDING_CONFLICT"].format(
+                    value=self._padx
+                )
             )
-
-    def get_width(self) -> int:
-        """
-        Returns:
-            int: The entire width of the message including the borders.
-        """
-        return self._width
-
-    def get_height(self) -> int:
-        """
-        Returns:
-            int: The entire height of the message including the borders.
-        """
-        return self._height
 
     def _calculate_width(self) -> int:
         """
+        Calculate the inner width of the message frame.
+
         Returns:
-            int: The width of the message excluding the borders.
+            The calculated inner width.
         """
         return calculate_inner_width(
             head=self._message_text,
-            minimum_width=self.__min_width,
-            padx=self.__padx,
+            minimum_width=self._min_width,
+            padx=self._padx,
         )
 
     def _generate_message(self) -> str:
-        # Add the top line
-        item = [
-            f"{self.__style['tl']}"
-            f"{self.__style['h'] * (self._inner_width)}"
-            f"{self.__style['tr']}\n"
+        """
+        Generate the formatted message with borders and alignment.
+
+        Returns:
+            The complete formatted message string.
+        """
+        # Start with top border
+        lines = [
+            f"{self.style[TL]}{self.style[H] * self._inner_width}{self.style[TR]}\n"
         ]
 
-        # Get the width of the menu
-        self._width = len(item[0].strip("\n"))
+        # Store total width
+        self._width = len(lines[0].strip("\n"))
 
-        # Add message lines
+        # Add each line of text
         for line in self._message_text:
-            if self.align == "center":
-                # Center align the line
+            if self.align == AlignEnum.CENTER.value:
                 formatted_line = f"{line:^{self._inner_width}}"
-            elif self.align == "right":
-                # Right align the line with padding
-                padding_left = " " * (self._inner_width - len(line) - self.__padx[1])
-                padding_right = " " * self.__padx[1]
-                formatted_line = f"{padding_left}{line}{padding_right}"
-            else:
-                # Left align the line with padding
-                padding_left = " " * self.__padx[0]
-                padding_right = " " * (self._inner_width - len(line) - self.__padx[0])
-                formatted_line = f"{padding_left}{line}{padding_right}"
+            elif self.align == AlignEnum.RIGHT.value:
+                pad_left = self._inner_width - len(line) - self._padx[1]
+                formatted_line = f"{' ' * pad_left}{line}{' ' * self._padx[1]}"
+            else:  # LEFT alignment
+                pad_right = self._inner_width - len(line) - self._padx[0]
+                formatted_line = (
+                    f"{' ' * self._padx[0]}{line}{' ' * pad_right}"
+                )
 
-            item.append(f"{self.__style['v']}{formatted_line}{self.__style['v']}\n")
+            lines.append(f"{self.style[V]}{formatted_line}{self.style[V]}\n")
 
-        # Add the bottom line
-        item.append(
-            f"{self.__style['bl']}"
-            f"{self.__style['h'] * self._inner_width}"
-            f"{self.__style['br']}"
+        # Add bottom border
+        lines.append(
+            f"{self.style[BL]}{self.style[H] * self._inner_width}{self.style[BR]}"
         )
 
-        # Get the height of the menu
-        self._height = len(item)
-
-        return "".join(item)
+        # Store height and return joined lines
+        self._height = len(lines)
+        return "".join(lines)
 
     @property
     def message(self) -> str:
-        return self._message
+        """Get the complete formatted message."""
+        return self._content
 
     def __str__(self) -> str:
-        return self._message
+        """Get string representation of the message."""
+        return self._content
 
 
 if __name__ == "__main__":

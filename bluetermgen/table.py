@@ -1,529 +1,770 @@
-from typing import Tuple, Union
+from typing import Dict, List, Tuple, Union
+from .types import (
+    StyleType,
+    AlignType,
+    TableDataType,
+    TableHeaderType,
+    TableAlignType,
+    TablePaddingType,
+    TableMinWidthType,
+    StyleEnum,
+    AlignEnum,
+    HeaderEnum,
+)
+from .constants import (
+    ERROR_MESSAGES,
+    TL,
+    TR,
+    BL,
+    BR,
+    H,
+    V,
+    ML,
+    MR,
+    MT,
+    MB,
+    C,
+    HB,
+    MAX_COLUMN_WIDTH,
+    MAX_TABLE_WIDTH,
+)
+from .helpers import calculate_table_inner_width
+from .base import BorderedElement
+from .exceptions import ValidationError, PaddingError
 
-from .helpers import STYLES, calculate_table_inner_width
 
-
-class Table:
+class Table(BorderedElement):
     """
-    Generates a table with borders with different options.
+    Generates a bordered table with advanced styling and formatting options.
 
     Args:
-        table_data (list):
-            The data to display in the table.
+        table_data (TableDataType):
+            The data to display in table format:
+            - List[List[str]]: Each inner list is a row
+            - List[Dict[str, str]]: Each dict is a row with column keys
 
-            Two types are supported:
-            - A list of lists:
-            [
-                ["header 1", "header 2", "header 3"],
-                ["r1_c1", "r1_c2", "r1_c3"],
-                ["r2_c1", "r2_c2", "r2_c3"],
-                ["r3_c1", "r3_c2", "r3_c3"],
-            ]
-
-            - A list of dictionaries:
-            [
-                {"header 1": "r1_c1", "header 2": "r1_c2", "header 3": "r1_c3"},
-                {"header 1": "r2_c1", "header 2": "r2_c2", "header 3": "r2_c3"},
-                {"header 1": "r3_c1", "header 2": "r3_c2", "header 3": "r3_c3"},
-            ]
-
-        headers (str | list, optional):
-            The table headers. Defaults to `from_data`.
-
-            Options:
-            "None" - No headers.
-            "from_data" - Get the headers from the table_data:
-                - First list if the data is a list of lists.
-                - Dictionary keys if the data is a list of dictionaries.
-            ["header 1", "header 2", "header 3"] - Custom headers.
+        headers (TableHeaderType, optional):
+            Table header configuration. Options:
+            - HeaderEnum.NONE: No headers
+            - HeaderEnum.FROM_DATA: Auto-generate from data
+            - List[str]: Custom header labels
+            Defaults to HeaderEnum.FROM_DATA.
 
         index (bool, optional):
-            Add a column with an index for each row.
+            Whether to show row numbers.
+            Defaults to False.
 
-            Options:
-            True - No index.
-            False - 1, 2, 3, etc.
+        align (TableAlignType, optional):
+            Default alignment for headers and data.
+            Format: (header_align, data_align)
+            Defaults to (LEFT, LEFT).
 
-        align (tuple, optional):
-            How to align the table parts. Defaults to `("left", "left")`.
-            Options - left, right, center
+        custom_align (Dict[int, Union[AlignType, List[AlignType]]], optional):
+            Custom alignment per column:
+            - {col_idx: align_type}: Same alignment for all rows
+            - {col_idx: [row_aligns]}: Different alignment per row
+            Defaults to empty dict.
 
-            Overwritten by custom_align.
+        min_width (TableMinWidthType, optional):
+            Minimum column widths:
+            - int: Same width for all columns
+            - Dict[int, int]: Different width per column
+            Defaults to 0.
 
-            Example:
-            (a, b) = (headers, table_data)
+        style (StyleType, optional):
+            Border style for the table.
+            Defaults to StyleEnum.SINGLE.
 
-        custom_align (dict, optional):
-            Custom alignment for each column. Must be a dictionary with the
-            column index as the key and the alignment or list of alignments as
-            the value.
-            Options - left, right, center
-
-            Overwrites align.
-
-            Example:
-            {0: "center", 1: ["center", "left", "right"]}
-            {col1: all rows, col2: [row1, row2, row3]}
-
-        min_width (int | dict, optional):
-            The minimum width for all the columns.
-            You can also specify a value for each column.
-            Defaults to `0`.
-
-            Example:
-            {0: 10, 1: 20, 2: 10, ....}
-            {col1: min_width, col2: min_width, ...}
-
-        style (str, optional):
-            The table style to use. Defaults to `single`.
-
-        padx (tuple | int, optional):
-            Padding to add around the table header or data.
-            Defaults to `((0, 0), (0, 0))`.
-            - `((1, 1), (1, 1))` = `((header left, header right), (data left, data right))`
-            - `1` = `((1, 1), (1, 1))`
+        padx (TablePaddingType, optional):
+            Horizontal padding configuration:
+            Format: ((header_left, header_right), (data_left, data_right))
+            Defaults to ((0, 0), (0, 0)).
 
         row_sep (bool, optional):
-            Add a row separator between each row. Defaults to `False`.
+            Whether to show separators between rows.
+            Defaults to False.
 
     Raises:
-        ValueError:
-            If the `table_data` is not a list of lists or a list of dictionaries.
+        ValidationError:
+            - Invalid data structure
+            - Invalid header configuration
+            - Invalid alignment settings
+            - Invalid width settings
+            - Column index out of range
 
-        ValueError:
-            If the `headers` is not a list or a string.
-
-        ValueError:
-            If the `index` is not a boolean.
-
-            Options:
-            False - No index column.
-            True - 1, 2, 3, etc.
-
-        ValueError:
-            If the `align` is not a tuple of length 2 containing:
-            - "left" | "center" | "right"
-
-        ValueError:
-            If the `custom_align` is not a dictionary.
-
-        ValueError:
-            If the `min_width` is not an integer or a dictionary.
-
-        ValueError:
-            If the `style` property is not a string or a valid option.
-            Defaults to `single`.
-
-        ValueError:
-            If the `padx` is not a tuple or an integer.
-
-        ValueError:
-            If the `row_sep` is not a boolean.
-
-
-    Example:
-        >>> table = Table(
-                [
-        ...         ["header 1", "header 2", "header 3"],
-        ...         ["r1_c1", "r1_c2", "r1_c3"],
-        ...         ["r2_c1", "r2_c2", "r2_c3"],
-        ...         ["r3_c1", "r3_c2", "r3_c3"],
-        ...     ],
-        ...     index=True,
-        ...     style="single",
-        ...     row_sep=True,
-        ... )
-
+        PaddingError:
+            - Invalid padding configuration
+            - Padding/alignment conflicts
     """
 
     def __init__(
         self,
-        table_data: Union[list, dict],
-        headers: Union[str, list] = "from_data",
+        table_data: TableDataType,
+        headers: TableHeaderType = HeaderEnum.FROM_DATA,
         index: bool = False,
-        align: Tuple = ("left", "left"),
-        custom_align: dict = {},
-        min_width: Union[int, dict] = 0,
-        style: str = "single",
-        padx: Tuple = ((0, 0), (0, 0)),
+        align: TableAlignType = (AlignEnum.LEFT.value, AlignEnum.LEFT.value),
+        custom_align: Dict[int, Union[AlignType, List[AlignType]]] = {},
+        min_width: TableMinWidthType = 0,
+        style: StyleType = StyleEnum.SINGLE.value,
+        padx: TablePaddingType = ((0, 0), (0, 0)),
         row_sep: bool = False,
     ) -> None:
+        """Initialize table with configuration."""
+        super().__init__(style=style, align=align[0])
+
+        # Initialize state
         self._is_dict_table = False
-        self._is_custom_headers = False if headers == "from_data" else True
+        self._is_custom_headers = headers != HeaderEnum.FROM_DATA
+        self._column_count = 0
+        self._row_count = 0
+
+        # Validate and set properties
         self.table_data = table_data
         self.headers = headers
         self.index = index
         self.align = align
         self.custom_align = custom_align
         self.min_width = min_width
-        self.style = style
         self.padx = padx
         self.row_separator = row_sep
 
+        # Calculate dimensions
+        self._calculate_dimensions()
+
+        # Generate table
+        self._content = self._generate_table()
+
+    def _calculate_dimensions(self) -> None:
+        """Calculate table dimensions and validate sizes."""
         self._inner_width = calculate_table_inner_width(
-            table_data=self.__table_data,
-            headers=self.__headers,
-            padx=self.__padx,
-            minimum_width=self.__min_width,
+            table_data=self._table_data,
+            headers=self._headers,
+            padx=self._padx,
+            minimum_width=self._min_width,
             is_dict_table=self._is_dict_table,
-            indexing=self.__index,
+            indexing=self._index,
         )
 
-        self._width = 0
-        self._height = 0
-        self._table = self._generate_table()
+        if MAX_TABLE_WIDTH != 0:
+            # Validate column widths
+            total_width = sum(self._inner_width.values()) + (
+                len(self._inner_width) - 1
+            )
+            if total_width > MAX_TABLE_WIDTH:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["TABLE_TOO_WIDE"].format(
+                        width=total_width, max_width=MAX_TABLE_WIDTH
+                    )
+                )
+
+        if MAX_COLUMN_WIDTH != 0:
+            for col, width in self._inner_width.items():
+                if width > MAX_COLUMN_WIDTH:
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"]["COLUMN_TOO_WIDE"].format(
+                            column=col, width=width, max_width=MAX_COLUMN_WIDTH
+                        )
+                    )
+
+    def _validate_cell_content(self, content: str, col_idx: int) -> str:
+        """
+        Validate and normalize cell content.
+
+        Args:
+            content: Cell content to validate
+            col_idx: Column index for error reporting
+
+        Returns:
+            Normalized content string
+
+        Raises:
+            ValidationError: If content is invalid
+        """
+
+        if content is None:
+            return "None"
+
+        if not isinstance(content, (str, int, float)):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_CELL_TYPE"].format(
+                    column=col_idx, value=type(content).__name__
+                )
+            )
+
+        content_str = str(content)
+        if MAX_COLUMN_WIDTH != 0 and len(content_str) > MAX_COLUMN_WIDTH:
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["CELL_TOO_LONG"].format(
+                    column=col_idx,
+                    length=len(content_str),
+                    max_length=MAX_COLUMN_WIDTH,
+                )
+            )
+
+        return content_str
+
+    def _generate_border(self, border_type: str) -> str:
+        """
+        Generate a table border line.
+
+        Args:
+            border_type: Type of border (top, middle, bottom)
+
+        Returns:
+            Formatted border string
+        """
+        if border_type == "top":
+            left, mid, right = self.style[TL], self.style[MT], self.style[TR]
+            line = self.style[H]
+        elif border_type == "middle":
+            left, mid, right = self.style[ML], self.style[C], self.style[MR]
+            line = self.style[HB]
+        elif border_type == "row_separator":
+            left, mid, right = self.style[ML], self.style[C], self.style[MR]
+            line = self.style[H]
+        else:  # bottom
+            left, mid, right = self.style[BL], self.style[MB], self.style[BR]
+            line = self.style[H]
+
+        sections = [line * width for width in self._inner_width.values()]
+        result = f"{left}{mid.join(sections)}{right}"
+
+        # Only add newline if it's not the bottom border
+        return f"{result}\n" if border_type != "bottom" else result
+
+    def _format_row(
+        self,
+        row: Union[List[str], Dict[str, str]],
+        row_idx: int,
+        is_header: bool = False,
+    ) -> str:
+        """
+        Format a table row.
+
+        Args:
+            row: Row data as list or dict
+            row_idx: Row index for alignment
+            is_header: Whether this is a header row
+
+        Returns:
+            Formatted row string
+        """
+        cells = []
+
+        # Add index if enabled
+        if self._index and not is_header:
+            cells.append(f"{row_idx:>{self._inner_width[0]}}")
+        elif self._index:
+            cells.append(" " * self._inner_width[0])
+
+        # Format each cell
+        start_idx = 1 if self._index else 0
+        if isinstance(row, dict):
+            for col_idx, key in enumerate(self._headers, start_idx):
+                content = self._validate_cell_content(row[key], col_idx)
+                align = self._get_alignment(col_idx, row_idx, is_header)
+                padding = self._padx[0] if is_header else self._padx[1]
+                cells.append(
+                    self._format_cell(content, align, padding, col_idx)
+                )
+        else:
+            for col_idx, content in enumerate(row, start_idx):
+                content = self._validate_cell_content(content, col_idx)
+                align = self._get_alignment(col_idx, row_idx, is_header)
+                padding = self._padx[0] if is_header else self._padx[1]
+                cells.append(
+                    self._format_cell(content, align, padding, col_idx)
+                )
+
+        return f"{self.style[V]}{self.style[V].join(cells)}{self.style[V]}\n"
+
+    def _get_alignment(
+        self, col_idx: int, row_idx: int, is_header: bool
+    ) -> AlignType:
+        """
+        Get alignment for a specific cell.
+
+        Args:
+            col_idx: Column index
+            row_idx: Row index
+            is_header: Whether this is a header cell
+
+        Returns:
+            Alignment value for the cell
+        """
+        if is_header:
+            return self.align[0]
+
+        if col_idx in self._custom_align:
+            align_setting = self._custom_align[col_idx]
+            if isinstance(align_setting, list):
+                return align_setting[row_idx]
+            return align_setting
+
+        return self.align[1]
+
+    def _format_cell(
+        self,
+        content: str,
+        alignment: AlignType,
+        padding: Tuple[int, int],
+        col_idx: int,
+    ) -> str:
+        """
+        Format a cell's content with alignment and padding.
+
+        Args:
+            content: Cell content
+            alignment: Desired alignment
+            padding: (left, right) padding
+            col_idx: Column index for width
+
+        Returns:
+            Formatted cell content
+        """
+        width = self._inner_width[col_idx]
+
+        if alignment == AlignEnum.CENTER.value:
+            return f"{content:^{width}}"
+
+        lpad, rpad = padding
+        if alignment == AlignEnum.RIGHT.value:
+            space_left = width - len(content) - rpad
+            return f"{' ' * space_left}{content}{' ' * rpad}"
+
+        space_right = width - len(content) - lpad
+        return f"{' ' * lpad}{content}{' ' * space_right}"
+
+    def _generate_table(self) -> str:
+        """
+        Generate the complete formatted table.
+
+        Returns:
+            Formatted table string
+        """
+        # Initialize with top border
+        table = [self._generate_border("top")]
+        self._width = len(table[0].strip("\n"))
+
+        # Add headers if enabled
+        if self._headers != HeaderEnum.NONE.value:
+            table.append(self._format_row(self._headers, 0, True))
+            table.append(self._generate_border("middle"))
+
+        # Add data rows
+        row_count = len(self._table_data)
+        for idx, row in enumerate(self._table_data, 1):
+            table.append(self._format_row(row, idx))
+
+            # Add row separator if enabled and not last row
+            if self._row_separator and idx < row_count:
+                table.append(self._generate_border("row_separator"))
+
+        # Add bottom border
+        table.append(self._generate_border("bottom"))
+
+        # Join and store height
+        result = "".join(table)
+        self._height = len(result.split("\n"))
+        return result
 
     @property
-    def table_data(self) -> list:
-        return self.__table_data
+    def column_count(self) -> int:
+        """Get number of columns (excluding index)."""
+        return self._column_count
+
+    @property
+    def row_count(self) -> int:
+        """Get number of data rows (excluding headers)."""
+        return self._row_count
+
+    @property
+    def effective_widths(self) -> Dict[int, int]:
+        """Get effective column widths."""
+        return self._inner_width.copy()
+
+    @property
+    def table_data(self) -> TableDataType:
+        """Get the current table data."""
+        return self._table_data
 
     @table_data.setter
-    def table_data(self, value: Union[list, dict]):
-        # Check if the value is a list of lists.
-        if isinstance(value, list) and all(isinstance(row, list) for row in value):
+    def table_data(self, value: TableDataType) -> None:
+        """
+        Set and validate table data.
 
-            # Check if row length is 1 or less and if no headers are specified.
+        Args:
+            value: Table data as list of lists or list of dicts.
+
+        Raises:
+            ValidationError: If data structure is invalid.
+        """
+        if not isinstance(value, list):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_DATA_TYPE"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
+
+        if not value:
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["EMPTY_TABLE"].format(
+                    value="empty list"
+                )
+            )
+
+        # Handle list of lists
+        if all(isinstance(row, list) for row in value):
             if len(value) <= 1 and not self._is_custom_headers:
-                raise ValueError(
-                    "You must provide at least two rows in 'table_data' "
-                    "if no custom 'headers' are provided."
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INSUFFICIENT_ROWS"].format(
+                        value=len(value)
+                    )
                 )
 
-            # Check if all rows have the same length.
-            elif not all(len(row) == len(value[0]) for row in value):
-                raise ValueError("All rows in 'table_data' must have the same length.")
+            row_lengths = {len(row) for row in value}
+            if len(row_lengths) > 1:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INCONSISTENT_ROWS"]
+                )
 
-            else:
-                self.__table_data = value
+            self._table_data = value
+            self._column_count = row_lengths.pop()
+            self._row_count = len(value)
 
-        # Check if the value is a list of dictionaries with matching keys
-        elif isinstance(value, list) and all(isinstance(row, dict) for row in value):
-            # Extract the keys of the first dictionary to check consistency
+        # Handle list of dicts
+        elif all(isinstance(row, dict) for row in value):
             first_keys = set(value[0].keys()) if value else set()
-
-            if all(set(row.keys()) == first_keys for row in value):
-                self.__table_data = value
-                self._is_dict_table = True
-            else:
-                raise ValueError(
-                    "All dictionaries in 'table_data' must have the same keys."
+            if not all(set(row.keys()) == first_keys for row in value):
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INCONSISTENT_KEYS"].format(
+                        value=", ".join(str(set(row.keys())) for row in value)
+                    )
                 )
 
-        # Raise an error if neither condition is met
+            self._table_data = value
+            self._is_dict_table = True
+            self._column_count = len(first_keys)
+            self._row_count = len(value)
+
         else:
-            raise ValueError(
-                "The 'table_data' property must be a list of lists "
-                "(with matching length) or a list of dictionaries "
-                "(with matching keys)."
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_DATA_TYPE"].format(
+                    value=f"list containing non-list and non-dict items"
+                )
             )
 
     @property
-    def headers(self) -> Union[str, list]:
-        return self.__headers
+    def headers(self) -> TableHeaderType:
+        """Get the current headers configuration."""
+        return self._headers
 
     @headers.setter
-    def headers(self, value: Union[str, list]):
-        if value == "None":  # If "None" is passed, no headers are used.
-            self.__headers = value
-        elif value == "from_data":
-            # If table_data is a list of lists, take the first list as headers
-            if not self._is_dict_table:
-                try:
-                    self.__headers = self.__table_data.pop(0)
-                except IndexError:
-                    self.__headers = []
+    def headers(self, value: TableHeaderType) -> None:
+        """
+        Set and validate table headers.
 
-            # If table_data is a list of dicts, take the keys as headers
+        Args:
+            value: Header configuration or custom labels.
+
+        Raises:
+            ValidationError: If header format is invalid.
+        """
+        if value == HeaderEnum.NONE.value:
+            self._headers = []
+        elif value == HeaderEnum.FROM_DATA.value:
+            if self._is_dict_table:
+                if not self._table_data:
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"]["EMPTY_TABLE"]
+                    )
+                self._headers = list(self._table_data[0].keys())
             else:
-                self.__headers = list(self.__table_data[0].keys())
+                if len(self._table_data) < 2:
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"]["INSUFFICIENT_ROWS"].format(
+                            value=len(self._table_data)
+                        )
+                    )
+                self._headers = self._table_data.pop(0)
+        elif isinstance(value, list) and all(
+            isinstance(x, str) for x in value
+        ):
+            if len(value) != self._column_count:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["HEADER_COUNT_MISMATCH"].format(
+                        value=len(value), column_count=self._column_count
+                    )
+                )
+            self._headers = value
         else:
-            # If a custom list is provided
-            if isinstance(value, list):
-                self.__headers = value
-            else:
-                raise ValueError("The 'headers' property must be a list.")
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_HEADERS"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
 
     @property
     def index(self) -> bool:
-        return self.__index
+        """Get the current index setting."""
+        return self._index
 
     @index.setter
-    def index(self, value: bool):
-        if isinstance(value, bool):
-            self.__index = value
-        else:
-            raise ValueError(f"The 'index' property must be a boolean.")
+    def index(self, value: bool) -> None:
+        """
+        Set and validate index display option.
+
+        Args:
+            value: Whether to show row numbers.
+
+        Raises:
+            ValidationError: If value is not boolean.
+        """
+        if not isinstance(value, bool):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_INDEX"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
+        self._index = value
 
     @property
-    def align(self) -> Tuple:
-        return self.__align
+    def align(self) -> TableAlignType:
+        """Get the current alignment configuration."""
+        return self._align
 
     @align.setter
-    def align(self, value: Tuple):
-        if (
-            isinstance(value, tuple)
-            and len(value) == 2
-            and all(x in ["left", "center", "right"] for x in value)
-        ):
-            self.__align = value
-        else:
-            raise ValueError(
-                f"The 'align' property must be a tuple of length 2 containing"
-                f"'left', 'center', or 'right'."
+    def align(self, value: TableAlignType) -> None:
+        """
+        Set and validate alignment configuration.
+
+        Args:
+            value: Tuple of alignments for headers and data.
+
+        Raises:
+            ValidationError: If alignment format is invalid.
+        """
+        if not isinstance(value, tuple) or len(value) != 2:
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_ALIGN"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
+        valid_alignments = [e.value for e in AlignEnum]
+        if not all(x in valid_alignments for x in value):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_ALIGN"].format(
+                    value=f"invalid alignment(s): {value}"
+                )
+            )
+        self._align = value
+
     @property
-    def custom_align(self) -> dict:
-        return self.__custom_align
+    def custom_align(self) -> Dict[int, Union[AlignType, List[AlignType]]]:
+        """Get the current custom alignment configuration."""
+        return self._custom_align
 
     @custom_align.setter
-    def custom_align(self, value: dict):
-        if isinstance(value, dict):
-            self.__custom_align = value
-        else:
-            raise ValueError("The 'custom_align' property must be a dictionary.")
+    def custom_align(
+        self, value: Dict[int, Union[AlignType, List[AlignType]]]
+    ) -> None:
+        """
+        Set and validate custom alignment configuration.
+
+        Args:
+            value: Dictionary mapping columns to alignments.
+
+        Raises:
+            ValidationError: If alignment configuration is invalid.
+        """
+        if not isinstance(value, dict):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_CUSTOM_ALIGN"].format(
+                    value=f"{type(value).__name__}"
+                )
+            )
+
+        valid_alignments = [e.value for e in AlignEnum]
+
+        for col_idx, alignment in value.items():
+            if not isinstance(col_idx, int):
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INVALID_COLUMN_INDEX"].format(
+                        value=f"{type(col_idx).__name__}"
+                    )
+                )
+
+            if col_idx >= self._column_count:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"][
+                        "COLUMN_INDEX_OUT_OF_RANGE"
+                    ].format(value=col_idx, max_index=self._column_count - 1)
+                )
+
+            if isinstance(alignment, list):
+                if len(alignment) != self._row_count:
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"][
+                            "ALIGNMENT_COUNT_MISMATCH"
+                        ].format(
+                            value=len(alignment), row_count=self._row_count
+                        )
+                    )
+                if not all(a in valid_alignments for a in alignment):
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"][
+                            "INVALID_ALIGNMENT_VALUE"
+                        ].format(value=alignment)
+                    )
+            elif alignment not in valid_alignments:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INVALID_ALIGNMENT_VALUE"].format(
+                        value=alignment
+                    )
+                )
+
+        self._custom_align = value
 
     @property
-    def min_width(self) -> Union[int, dict]:
-        return self.__min_width
+    def min_width(self) -> TableMinWidthType:
+        """Get the current minimum width configuration."""
+        return self._min_width
 
     @min_width.setter
-    def min_width(self, value: Union[int, dict]):
+    def min_width(self, value: TableMinWidthType) -> None:
+        """
+        Set and validate minimum width configuration.
+
+        Args:
+            value: Integer or dictionary of minimum column widths.
+
+        Raises:
+            ValidationError: If width configuration is invalid.
+        """
         if isinstance(value, int):
-            self.__min_width = value
-        elif isinstance(value, dict):
-            if len(value) > len(self.__table_data[0]):
-                raise ValueError(
-                    "The 'min_width' dictionary has more keys than the number of columns."
+            if value < 0:
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INVALID_MIN_WIDTH_VALUES"].format(
+                        value=value
+                    )
                 )
-            for k, v in value.items():
-                if not isinstance(v, int):
-                    raise ValueError(
-                        "The values in the 'min_width' dictionary must be integers."
+            self._min_width = value
+        elif isinstance(value, dict):
+            if not all(
+                isinstance(k, int) and isinstance(v, int) and v >= 0
+                for k, v in value.items()
+            ):
+                raise ValidationError(
+                    ERROR_MESSAGES["TABLE"]["INVALID_MIN_WIDTH_VALUES"].format(
+                        value=value
                     )
-                if not isinstance(k, int):
-                    raise ValueError(
-                        "The keys in the 'min_width' dictionary must be integers."
+                )
+
+            for col_idx in value:
+                if col_idx >= self._column_count:
+                    raise ValidationError(
+                        ERROR_MESSAGES["TABLE"][
+                            "COLUMN_INDEX_OUT_OF_RANGE"
+                        ].format(
+                            value=col_idx, max_index=self._column_count - 1
+                        )
                     )
 
-            self.__min_width = value
-            for i in range(len(self.__table_data[0])):
-                if i not in value:
-                    self.__min_width[i] = 0
-
+            self._min_width = value
         else:
-            raise ValueError(
-                "The 'min_width' property must be an integer or a dictionary."
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_MIN_WIDTH_TYPE"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
     @property
-    def style(self) -> dict:
-        return self.__style
-
-    @style.setter
-    def style(self, value: str):
-        valid_styles = list(STYLES.keys())
-        if isinstance(value, str) and value in valid_styles:
-            self.__style = STYLES[value]
-        else:
-            raise ValueError(f"The 'style' property must be one of {valid_styles}.")
-
-    @property
-    def padx(self) -> Tuple:
-        return self.__padx
+    def padx(self) -> TablePaddingType:
+        """Get the current padding configuration."""
+        return self._padx
 
     @padx.setter
-    def padx(self, value: Union[Tuple, int]):
-        def validate_padx_structure(padx_tuple):
-            """
-            Helper function to validate that the tuple structure is correct.
-            """
-            return all(
-                isinstance(x, tuple) and len(x) == 2 and all(n >= 0 for n in x)
-                for x in padx_tuple
-            )
+    def padx(self, value: TablePaddingType) -> None:
+        """
+        Set and validate padding configuration.
 
-        if isinstance(value, int) and value >= 0:
-            self.__padx = ((value, value), (value, value))
+        Args:
+            value: Padding configuration for headers and data.
+
+        Raises:
+            PaddingError: If padding is invalid or conflicts with alignment.
+        """
+        if isinstance(value, int):
+            if value < 0:
+                raise PaddingError(
+                    ERROR_MESSAGES["TABLE"]["INVALID_PADDING"].format(
+                        value=value
+                    )
+                )
+            self._padx = ((value, value), (value, value))
         elif (
             isinstance(value, tuple)
             and len(value) == 2
-            and validate_padx_structure(value)
+            and all(
+                isinstance(x, tuple)
+                and len(x) == 2
+                and all(isinstance(n, int) and n >= 0 for n in x)
+                for x in value
+            )
         ):
-            self.__padx = value
+            self._padx = value
         else:
-            raise ValueError(
-                "The 'padx' property must be either:\n"
-                "- A single positive integer.\n"
-                "- A tuple of 2 tuples, each containing 2 positive integers."
+            raise PaddingError(
+                ERROR_MESSAGES["TABLE"]["INVALID_PADDING"].format(
+                    value=f"{type(value).__name__}"
+                )
             )
 
-        # Validate 'center' conflict with padding
-        for idx, section in enumerate(["headers", "table_data"]):
-            if self.align[idx] == "center" and self.__padx[idx] != (0, 0):
-                raise ValueError(
-                    f"The 'padx' for the '{section}' cannot be used "
-                    f"when 'align' is 'center' for the same."
+        # Check for center alignment conflicts
+        sections = ["headers", "data"]
+        for idx, section in enumerate(sections):
+            if self.align[idx] == AlignEnum.CENTER.value and self._padx[
+                idx
+            ] != (0, 0):
+                raise PaddingError(
+                    ERROR_MESSAGES["TABLE"]["CENTER_PADDING_CONFLICT"].format(
+                        section=section, value=self._padx[idx]
+                    )
                 )
 
     @property
     def row_separator(self) -> bool:
-        return self.__row_separator
+        """Get the current row separator setting."""
+        return self._row_separator
 
     @row_separator.setter
-    def row_separator(self, value: bool):
-        if isinstance(value, bool):
-            self.__row_separator = value
-        else:
-            raise ValueError("The 'row_separator' property must be a boolean.")
-
-    def get_width(self) -> int:
+    def row_separator(self, value: bool) -> None:
         """
-        Returns:
-            int: The entire width of the menu including the borders.
+        Set and validate row separator display option.
+
+        Args:
+            value: Whether to show row separators.
+
+        Raises:
+            ValidationError: If value is not boolean.
         """
-        return self._width
-
-    def get_height(self) -> int:
-        """
-        Returns:
-            int: The entire height of the menu including the borders.
-        """
-        return self._height
-
-    def _generate_table(self) -> str:
-        def format_line(
-            line: Union[str, int], alignment: str, padx: Tuple, col_index: int
-        ) -> str:
-            """Helper to format a line based on alignment and padding."""
-            line = str(line)
-
-            if alignment == "center":
-                return f"{line:^{self._inner_width[col_index]}}"
-            elif alignment == "right":
-                lpadx, rpadx = padx
-                return f"{' ' * (self._inner_width[col_index] - len(line) - rpadx)}{line}{' ' * rpadx}"
-
-            else:
-                lpadx, _ = padx
-                return f"{' ' * lpadx}{line}{' ' * (self._inner_width[col_index] - len(line) - lpadx)}"
-
-        # Set the starting index for the inner_width based on the index attribute
-        starting_index = 1 if self.__index else 0
-
-        # Prepare the top border
-        item = [
-            f"{self.__style['tl']}"
-            f"{self.__style['mt'].join([self.__style['h'] * self._inner_width[i] for i in range(len(self._inner_width))])}"
-            f"{self.__style['tr']}\n"
-        ]
-
-        # Get the total width of the table
-        self._width = len(item[0].strip("\n"))
-
-        # Prepare headers if any
-        if self.__headers != "None":
-            item.append(self.__style["v"])
-            headings = [" " * self._inner_width[0]] if self.__index else []
-            for col_i, line in enumerate(self.__headers, 1 if self.__index else 0):
-                headings.append(format_line(line, self.align[0], self.__padx[0], col_i))
-            item.append(self.__style["v"].join(headings))
-            item.append(f"{self.__style['v']}\n")
-
-            # Add headers bottom border (no vertical lines at the end)
-            item.append(
-                f"{self.__style['ml']}"
-                f"{self.__style['c'].join([self.__style['hb'] * self._inner_width[i] for i in range(len(self._inner_width))])}"
-                f"{self.__style['mr']}\n"
-            )
-
-        # Prepare table data rows
-        separators = len(self.__table_data) - 1
-        for row_i, row in enumerate(self.__table_data, starting_index):
-            # Start each row with a vertical border
-            item.append(self.__style["v"])
-
-            # Add index column if needed
-            row_data = (
-                [f"{row_i}{' ' * (self._inner_width[0] - len(str(row_i)))}"]
-                if self.__index
-                else []
-            )
-
-            # Handle dictionary-based tables
-            if self._is_dict_table:
-                for col_i, (line, column_name) in enumerate(
-                    zip(row, self.__headers), starting_index
-                ):
-                    # Check for custom alignment.
-                    if self.__custom_align and col_i in self.__custom_align:
-                        if isinstance(self.__custom_align[col_i], list):
-                            try:
-                                alignment = self.__custom_align[col_i][row_i]
-                            except IndexError:
-                                alignment = self.__align[1]
-                        else:
-                            alignment = self.__custom_align[col_i]
-                    else:
-                        alignment = self.__align[1]
-
-                    row_data.append(
-                        format_line(row[column_name], alignment, self.__padx[1], col_i)
-                    )
-
-            # Handle list-based tables
-            else:
-                for col_i, line in enumerate(row, starting_index):
-
-                    # Check for custom alignment.
-                    if self.__custom_align and col_i in self.__custom_align:
-                        if isinstance(self.__custom_align[col_i], list):
-                            try:
-                                alignment = self.__custom_align[col_i][row_i]
-                            except IndexError:
-                                alignment = self.__align[1]
-                        else:
-                            alignment = self.__custom_align[col_i]
-                    else:
-                        alignment = self.__align[1]
-
-                    row_data.append(format_line(line, alignment, self.__padx[1], col_i))
-
-            item.append(self.__style["v"].join(row_data))
-            item.append(f"{self.__style['v']}\n")
-
-            # Add row separator for list table,
-            # but only if it's not the last row
-            if self.__row_separator and separators != 0:
-                separators -= 1
-                separator = (
-                    f"{self.__style['ml']}"
-                    f"{self.__style['c'].join([self.__style['h'] * self._inner_width[i] for i in range(len(self._inner_width))])}"
-                    f"{self.__style['mr']}\n"
+        if not isinstance(value, bool):
+            raise ValidationError(
+                ERROR_MESSAGES["TABLE"]["INVALID_ROW_SEP"].format(
+                    value=f"{type(value).__name__}"
                 )
-                item.append(separator)
-
-        # Add the table bottom border
-        item.append(
-            f"{self.__style['bl']}"
-            f"{self.__style['mb'].join([self.__style['h'] * self._inner_width[i] for i in range(len(self._inner_width))])}"
-            f"{self.__style['br']}"
-        )
-
-        # Join all the pieces together into a single string
-        item = "".join(item)
-
-        # Set table height
-        self._height = len(item.split("\n"))
-
-        return item
+            )
+        self._row_separator = value
 
     @property
     def table(self) -> str:
-        return self._table
+        """Get the complete formatted table."""
+        return self._content
 
     def __str__(self) -> str:
-        return self._table
+        """Get string representation of the table."""
+        return self._content
 
 
 if __name__ == "__main__":
