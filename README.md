@@ -88,3 +88,5 @@ print(table)
 │Row3_c1│Row3_c2│Row3_c3│
 └───────┴───────┴───────┘
 ```
+
+[![Documentation Status](https://readthedocs.org/projects/bluetermgen/badge/?version=latest)](https://bluetermgen.readthedocs.io/en/latest/?badge=latest)
