@@ -6,7 +6,6 @@ from typing import (
     Literal,
     Optional,
     Tuple,
-    TypeAlias,
     Union,
 )
 from enum import Enum
@@ -69,12 +68,12 @@ class IndexEnum(str, Enum):
 
 
 # Border Types
-BorderCharType: TypeAlias = Literal[
+BorderCharType = Literal[
     "TL", "TR", "BL", "BR", "H", "V", "C", "ML", "MR", "MT", "MB", "HB"
 ]
 """Border character keys for style dictionaries"""
 
-StyleType: TypeAlias = Literal[
+StyleType = Literal[
     StyleEnum.SINGLE,
     StyleEnum.DOUBLE,
     StyleEnum.BOLD,
@@ -82,11 +81,11 @@ StyleType: TypeAlias = Literal[
 ]
 """Available border styles for UI elements"""
 
-BorderDict: TypeAlias = Dict[BorderCharType, str]
+BorderDict = Dict[BorderCharType, str]
 """Mapping of border positions to their character representations"""
 
 # Alignment Types
-AlignType: TypeAlias = Literal[
+AlignType = Literal[
     AlignEnum.LEFT,
     AlignEnum.CENTER,
     AlignEnum.RIGHT,
@@ -94,31 +93,31 @@ AlignType: TypeAlias = Literal[
 """Text alignment options within UI elements"""
 
 # Padding Types
-SinglePaddingType: TypeAlias = Tuple[int, int]
+SinglePaddingType = Tuple[int, int]
 """Basic padding configuration (left, right)"""
 
 # Message Types
-MessageTextType: TypeAlias = Union[str, List[str]]
+MessageTextType = Union[str, List[str]]
 """Content for message display (single string or multiple lines)"""
 
-MessagePaddingType: TypeAlias = Union[SinglePaddingType, int]
+MessagePaddingType = Union[SinglePaddingType, int]
 """Message padding configuration (tuple or uniform integer)"""
 
 
 # Menu Types
-MenuItemsType: TypeAlias = List[str]
+MenuItemsType = List[str]
 """List of menu options to display"""
 
-MenuAlignType: TypeAlias = Tuple[AlignType, AlignType, AlignType]
+MenuAlignType = Tuple[AlignType, AlignType, AlignType]
 """Menu section alignment (header, items, footer)"""
 
 MenuSectionPadding = Tuple[
     SinglePaddingType, SinglePaddingType, SinglePaddingType
 ]
-MenuPaddingType: TypeAlias = Union[MenuSectionPadding, int]
+MenuPaddingType = Union[MenuSectionPadding, int]
 """Menu section padding ((header), (items), (footer)) or uniform integer"""
 
-IndexType: TypeAlias = Union[
+IndexType = Union[
     None,
     Literal[
         IndexEnum.NUMBER_DOT,
@@ -131,11 +130,11 @@ IndexType: TypeAlias = Union[
 ]
 """Menu item numbering format including None for no indexing"""
 
-CustomPrefixType: TypeAlias = Optional[List[str]]
+CustomPrefixType = Optional[List[str]]
 """Custom prefixes for menu items"""
 
 # Table Types
-TableDataType: TypeAlias = Union[List[List[str]], List[Dict[str, str]]]
+TableDataType = Union[List[List[str]], List[Dict[str, str]]]
 """Table data in list or dictionary format
 - List format: List[List[str]] where each inner list is a row
 - Dict format: List[Dict[str, str]] where each dict is a row with column keys
@@ -154,7 +153,7 @@ Examples:
         ]
 """
 
-TableHeaderType: TypeAlias = Union[
+TableHeaderType = Union[
     HeaderEnum,
     List[str],
 ]
@@ -164,14 +163,14 @@ TableHeaderType: TypeAlias = Union[
 - List[str]: Custom header labels
 """
 
-TableAlignType: TypeAlias = Tuple[AlignType, AlignType]
+TableAlignType = Tuple[AlignType, AlignType]
 """Table section alignment (header, data)"""
 
-TablePaddingType: TypeAlias = Union[
+TablePaddingType = Union[
     Tuple[SinglePaddingType, SinglePaddingType],
     int,
 ]
 """Table section padding ((header), (data)) or uniform integer"""
 
-TableMinWidthType: TypeAlias = Union[int, Dict[int, int]]
+TableMinWidthType = Union[int, Dict[int, int]]
 """Column width specifications (uniform or per-column)"""
