@@ -30,4 +30,4 @@ jobs:
     - name: Build documentation
       run: |
         cd docs
-        make html
+        sphinx-build -b html source _build/html
