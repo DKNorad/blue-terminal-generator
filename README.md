@@ -1,6 +1,13 @@
 # Blue Terminal Generator
 Easily create messages, menus or directly visualize table data into the terminal
 
+[![Documentation Status](https://readthedocs.org/projects/bluetermgen/badge/?version=latest)](https://bluetermgen.readthedocs.io/en/latest/?badge=latest)
+[![GitHub Actions Workflow Status](https://github.com/DKNorad/blue-terminal-generator/actions/workflows/test.yml/badge.svg)](https://github.com/DKNorad/blue-terminal-generator/actions/workflows/test.yml)
+[![PyPI version](https://badge.fury.io/py/bluetermgen.svg)](https://badge.fury.io/py/bluetermgen)
+[![Python Version](https://img.shields.io/pypi/pyversions/bluetermgen.svg)](https://pypi.org/project/bluetermgen/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 ## How to use
 #### Message
 ```python
@@ -88,5 +95,3 @@ print(table)
 │Row3_c1│Row3_c2│Row3_c3│
 └───────┴───────┴───────┘
 ```
-
-[![Documentation Status](https://readthedocs.org/projects/bluetermgen/badge/?version=latest)](https://bluetermgen.readthedocs.io/en/latest/?badge=latest)
