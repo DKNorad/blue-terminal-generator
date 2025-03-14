@@ -1,7 +1,7 @@
 # Blue Terminal Generator
 Easily create messages, menus or directly visualize table data into the terminal
 
-[![Documentation Status](https://readthedocs.org/projects/bluetermgen/badge/?version=latest)](https://bluetermgen.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/bluetermgen/badge/?version=latest)](https://bluetermgen.readthedocs.io)
 [![GitHub Actions Workflow Status](https://github.com/DKNorad/blue-terminal-generator/actions/workflows/test.yml/badge.svg)](https://github.com/DKNorad/blue-terminal-generator/actions/workflows/test.yml)
 [![PyPI version](https://badge.fury.io/py/bluetermgen.svg)](https://badge.fury.io/py/bluetermgen)
 [![Python Version](https://img.shields.io/pypi/pyversions/bluetermgen.svg)](https://pypi.org/project/bluetermgen/)
