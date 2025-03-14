@@ -1,5 +1,4 @@
 import pytest
-from bluetermgen.message import Message
 
 
 @pytest.fixture

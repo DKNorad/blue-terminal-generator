@@ -450,7 +450,7 @@ class Table(BorderedElement):
         else:
             raise ValidationError(
                 ERROR_MESSAGES["TABLE"]["INVALID_DATA_TYPE"].format(
-                    value=f"list containing non-list and non-dict items"
+                    value="list containing non-list and non-dict items"
                 )
             )
 

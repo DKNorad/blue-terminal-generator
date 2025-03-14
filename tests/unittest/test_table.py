@@ -1,6 +1,6 @@
 import unittest
 from bluetermgen.table import Table
-from bluetermgen.exceptions import ValidationError, PaddingError
+from bluetermgen.exceptions import ValidationError
 
 
 class TestTable(unittest.TestCase):
